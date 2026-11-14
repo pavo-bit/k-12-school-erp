@@ -4,3 +4,7 @@ export * from "./audit";
 export * from "./outbox";
 export * from "./idempotency";
 export * from "./sequences";
+export * from "./academics";
+export * from "./students";
+export * from "./attendance";
+export * from "./fees";

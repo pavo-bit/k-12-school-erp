@@ -18,7 +18,7 @@
 - Added RLS policies for tenant tables, schools, organizations, audit_logs.
 - Added helper functions in `app` schema.
 
-### Progress (Milestone 1 continued)
+### Progress (Phase 1: Operational Core)
 
 - Implemented transactional `withTenantContext` with `SET LOCAL` context.
 - Implemented seed data (organization, school, academic year, roles, permissions, admin user).
@@ -30,6 +30,11 @@
 - Implemented platform module: create organization, create school, invite staff.
 - Added `withApi` wrapper for auth and tenant context.
 - Verified platform onboarding endpoints locally.
+- Implemented SIS module: create/list/get students, create guardians, link guardians, create enrollments.
+- Implemented academics module: create/list classes, sections, subjects.
+- Implemented attendance module: create sessions, mark records, submit sessions.
+- Implemented fees module: create fee heads, fee structures, generate invoices, record payments with receipts.
+- Verified full flow: school → class → section → student → attendance → fee head → fee structure → invoice → payment → receipt.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next
@@ -38,3 +43,4 @@
 - Implement RLS isolation tests.
 - Implement tenant resolution middleware for all routes.
 - Add audit log verification tests.
+- Implement exams, admissions, HR/payroll, communication, reports (Phase 2/3).

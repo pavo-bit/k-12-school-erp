@@ -27,11 +27,14 @@
 - Verified login and `/api/v1/me` return user, role, and school ID.
 - Removed debug routes after verification.
 - Attempted Better Auth schema generation; deferred full integration to keep local system runnable.
+- Implemented platform module: create organization, create school, invite staff.
+- Added `withApi` wrapper for auth and tenant context.
+- Verified platform onboarding endpoints locally.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next
 
 - Replace development auth with Better Auth integration.
-- Implement platform onboarding endpoints.
-- Add RLS isolation tests.
+- Implement RLS isolation tests.
 - Implement tenant resolution middleware for all routes.
+- Add audit log verification tests.

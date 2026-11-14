@@ -42,6 +42,18 @@ See [documentation/22-local-development.md](documentation/22-local-development.m
 | `pnpm db:migrate` | Apply migrations |
 | `pnpm db:reset` | Drop, recreate, migrate, seed |
 
+## AI assistance
+
+Project skills live in `.opencode/skills/` and are auto-discovered by OpenCode. CodeGraph is configured via `opencode.jsonc` and indexed in `.codegraph/`.
+
+Useful commands:
+
+```powershell
+pnpm codegraph:status
+pnpm codegraph:sync
+pnpm codegraph:query <symbol>
+```
+
 ## Repository layout
 
 See [documentation/20-engineering-standards.md](documentation/20-engineering-standards.md) section 2.

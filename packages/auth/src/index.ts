@@ -1,3 +1,5 @@
-// Better Auth configuration, sessions, RBAC, permissions.
-// Implemented in Milestone 1.
-export const AUTH_PLACEHOLDER = true;
+import { createAuth } from "./auth.js";
+import { toNextJsHandler } from "./next.js";
+
+export { createAuth, toNextJsHandler };
+export type AuthInstance = ReturnType<typeof createAuth>;

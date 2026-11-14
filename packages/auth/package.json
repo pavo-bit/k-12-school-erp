@@ -13,6 +13,7 @@
   "dependencies": {
     "@school-erp/core": "workspace:*",
     "@school-erp/db": "workspace:*",
+    "argon2": "^0.45.2",
     "better-auth": "^1.1.0",
     "zod": "^3.24.1"
   },

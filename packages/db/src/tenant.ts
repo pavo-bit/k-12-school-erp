@@ -1,4 +1,5 @@
-import type { Db } from "./client.js";
+import { sql } from "drizzle-orm";
+import type { Db } from "./client";
 
 export interface TenantContext {
   schoolId: string;
@@ -13,7 +14,16 @@ export async function withTenantContext<T>(
   ctx: TenantContext,
   fn: (tx: Db) => Promise<T>,
 ): Promise<T> {
-  // Placeholder: begin transaction, SET LOCAL context, run fn, commit/rollback.
-  // Implemented in Milestone 1 with a real transaction wrapper.
-  return fn(db);
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.current_school_id', ${ctx.schoolId}, true)`);
+    await tx.execute(sql`SELECT set_config('app.current_user_id', ${ctx.userId ?? ""}, true)`);
+    await tx.execute(sql`SELECT set_config('app.current_org_id', ${ctx.orgId ?? ""}, true)`);
+    await tx.execute(
+      sql`SELECT set_config('app.is_platform_admin', ${ctx.isPlatformAdmin ? "true" : "false"}, true)`,
+    );
+    await tx.execute(
+      sql`SELECT set_config('app.impersonation_id', ${ctx.impersonationId ?? ""}, true)`,
+    );
+    return fn(tx as unknown as Db);
+  });
 }

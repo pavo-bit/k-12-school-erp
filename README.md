@@ -31,16 +31,16 @@ See [documentation/22-local-development.md](documentation/22-local-development.m
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `pnpm dev` | Run all apps via Turborepo |
-| `pnpm build` | Build all packages |
-| `pnpm typecheck` | TypeScript across the workspace |
-| `pnpm lint` | ESLint |
-| `pnpm format` | Prettier write |
-| `pnpm test` | Unit tests |
-| `pnpm db:migrate` | Apply migrations |
-| `pnpm db:reset` | Drop, recreate, migrate, seed |
+| Command           | Purpose                         |
+| ----------------- | ------------------------------- |
+| `pnpm dev`        | Run all apps via Turborepo      |
+| `pnpm build`      | Build all packages              |
+| `pnpm typecheck`  | TypeScript across the workspace |
+| `pnpm lint`       | ESLint                          |
+| `pnpm format`     | Prettier write                  |
+| `pnpm test`       | Unit tests                      |
+| `pnpm db:migrate` | Apply migrations                |
+| `pnpm db:reset`   | Drop, recreate, migrate, seed   |
 
 ## AI assistance
 

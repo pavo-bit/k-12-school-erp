@@ -10,6 +10,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@school-erp/auth": "workspace:*",
+    "@school-erp/core": "workspace:*",
+    "@school-erp/db": "workspace:*",
+    "argon2": "^0.45.2",
+    "drizzle-orm": "^0.36.4",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

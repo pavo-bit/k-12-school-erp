@@ -1,0 +1,40 @@
+{
+  "name": "school-erp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-tenant K-12 school ERP SaaS for Indian day schools",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@school-erp/web",
+    "dev:worker": "turbo run dev --filter=@school-erp/worker",
+    "dev:pdf": "turbo run dev --filter=@school-erp/pdf-worker",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "playwright test",
+    "db:generate": "pnpm --filter @school-erp/db generate",
+    "db:migrate": "pnpm --filter @school-erp/db migrate",
+    "db:reset": "pnpm --filter @school-erp/db reset",
+    "db:seed": "pnpm --filter @school-erp/db seed",
+    "db:studio": "pnpm --filter @school-erp/db studio"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.3.3",
+    "turbo": "^2.3.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.72.2"
+  }
+}

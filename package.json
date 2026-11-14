@@ -26,7 +26,10 @@
     "db:migrate": "pnpm --filter @school-erp/db migrate",
     "db:reset": "pnpm --filter @school-erp/db reset",
     "db:seed": "pnpm --filter @school-erp/db seed",
-    "db:studio": "pnpm --filter @school-erp/db studio"
+    "db:studio": "pnpm --filter @school-erp/db studio",
+    "codegraph:sync": "codegraph sync",
+    "codegraph:status": "codegraph status",
+    "codegraph:query": "codegraph query"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -59,6 +59,9 @@ importers:
       "@school-erp/auth":
         specifier: workspace:*
         version: link:../../packages/auth
+      "@school-erp/communication":
+        specifier: workspace:*
+        version: link:../../packages/modules/communication
       "@school-erp/core":
         specifier: workspace:*
         version: link:../../packages/core
@@ -68,6 +71,9 @@ importers:
       "@school-erp/fees":
         specifier: workspace:*
         version: link:../../packages/modules/fees
+      "@school-erp/hr":
+        specifier: workspace:*
+        version: link:../../packages/modules/hr
       "@school-erp/platform":
         specifier: workspace:*
         version: link:../../packages/modules/platform
@@ -318,6 +324,9 @@ importers:
       "@school-erp/db":
         specifier: workspace:*
         version: link:../../db
+      drizzle-orm:
+        specifier: ^0.36.4
+        version: 0.36.4(@types/pg@8.23.1)(@types/react@19.3.0)(kysely@0.29.9)(pg@8.23.1)(react@19.3.1)
     devDependencies:
       "@types/node":
         specifier: ^22.10.0
@@ -381,6 +390,9 @@ importers:
       "@school-erp/db":
         specifier: workspace:*
         version: link:../../db
+      drizzle-orm:
+        specifier: ^0.36.4
+        version: 0.36.4(@types/pg@8.23.1)(@types/react@19.3.0)(kysely@0.29.9)(pg@8.23.1)(react@19.3.1)
     devDependencies:
       "@types/node":
         specifier: ^22.10.0

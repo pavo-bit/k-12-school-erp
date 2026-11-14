@@ -8,3 +8,5 @@ export * from "./academics";
 export * from "./students";
 export * from "./attendance";
 export * from "./fees";
+export * from "./hr";
+export * from "./communication";

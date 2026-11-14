@@ -34,7 +34,10 @@
 - Implemented academics module: create/list classes, sections, subjects.
 - Implemented attendance module: create sessions, mark records, submit sessions.
 - Implemented fees module: create fee heads, fee structures, generate invoices, record payments with receipts.
+- Implemented HR module: staff records, leave types/requests, salary components/structures, payroll runs, payroll items.
+- Implemented communication module: announcements, notification templates.
 - Verified full flow: school → class → section → student → attendance → fee head → fee structure → invoice → payment → receipt.
+- Verified HR staff creation and announcement creation.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

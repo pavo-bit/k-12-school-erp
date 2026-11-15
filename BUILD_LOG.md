@@ -36,8 +36,10 @@
 - Implemented fees module: create fee heads, fee structures, generate invoices, record payments with receipts.
 - Implemented HR module: staff records, leave types/requests, salary components/structures, payroll runs, payroll items.
 - Implemented communication module: announcements, notification templates.
+- Implemented exams module: exam terms, exams, exam subjects, grading schemes, marks entry, results computation, report card templates.
+- Implemented admissions module: enquiries, applications.
 - Verified full flow: school → class → section → student → attendance → fee head → fee structure → invoice → payment → receipt.
-- Verified HR staff creation and announcement creation.
+- Verified HR staff creation, announcement creation, enquiry creation.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

@@ -1,1 +1,1 @@
-export const MODULE = "exams" as const;
+export * from "./service/exams-service";

@@ -10,3 +10,5 @@ export * from "./attendance";
 export * from "./fees";
 export * from "./hr";
 export * from "./communication";
+export * from "./exams";
+export * from "./admissions";

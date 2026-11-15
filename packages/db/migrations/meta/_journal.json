@@ -29,6 +29,20 @@
       "when": 1794667835901,
       "tag": "0003_rls_hr_comm",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794720000000,
+      "tag": "0004_purple_yellowjacket",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794722301429,
+      "tag": "0005_rls_admissions",
+      "breakpoints": true
     }
   ]
 }

@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       );
     }
     const { id } = await params;
-    const student = await getStudent(ctx.schoolId, id);
+    const student = await getStudent(id);
     if (!student) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Student not found." } },

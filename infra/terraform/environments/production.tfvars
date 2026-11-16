@@ -1,0 +1,13 @@
+project_id          = "school-erp-prod"
+region              = "asia-south1"
+environment         = "production"
+billing_account_id  = "YOUR_BILLING_ACCOUNT_ID"
+db_password         = "CHANGE_ME_USE_SECRET_MANAGER"
+db_tier             = "db-custom-4-15360"
+web_min_instances   = 1
+web_max_instances   = 20
+worker_min_instances = 1
+worker_max_instances = 10
+enable_ha           = true
+backup_retention_days = 30
+pitr_days           = 7

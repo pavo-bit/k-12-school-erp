@@ -13,7 +13,7 @@
   "dependencies": {
     "@school-erp/core": "workspace:*",
     "@school-erp/db": "workspace:*",
-    "@school-erp/contracts": "workspace:*"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

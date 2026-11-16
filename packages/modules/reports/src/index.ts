@@ -1,1 +1,2 @@
-export const MODULE = "reports" as const;
+export * from "./service/reports-service";
+export * from "./schemas/reports-schemas";

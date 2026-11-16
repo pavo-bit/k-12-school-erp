@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { recordPayment } from "@school-erp/fees";
+import { createPayment } from "@school-erp/fees";
 import { z } from "zod";
 
 const RecordPaymentSchema = z.object({
@@ -30,12 +30,12 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const result = await recordPayment({
+    const result = await createPayment({
       schoolId: ctx.schoolId,
       studentId: parsed.data.studentId,
-      invoiceId: parsed.data.invoiceId,
       amountPaise: parsed.data.amountPaise,
       mode: parsed.data.mode,
+      status: "completed",
       actorId: ctx.userId,
     });
     return NextResponse.json(

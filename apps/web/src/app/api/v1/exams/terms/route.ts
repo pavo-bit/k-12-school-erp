@@ -3,11 +3,12 @@ import { withApi } from "@/server/with-api";
 import { createExamTerm, listExamTerms } from "@school-erp/exams";
 import { z } from "zod";
 
-const CreateTermSchema = z.object({
+const CreateExamTermSchema = z.object({
   academicYearId: z.string().uuid(),
-  name: z.string().min(1).max(80),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  name: z.string().min(1).max(200),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  status: z.enum(["active", "closed", "completed"]).optional(),
 });
 
 export async function GET(request: Request) {
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = CreateTermSchema.safeParse(body);
+    const parsed = CreateExamTermSchema.safeParse(body);
     if (!parsed.success)
       return NextResponse.json(
         {
@@ -48,8 +49,9 @@ export async function POST(request: Request) {
       schoolId: ctx.schoolId,
       academicYearId: parsed.data.academicYearId,
       name: parsed.data.name,
-      startDate: parsed.data.startDate,
-      endDate: parsed.data.endDate,
+      startDate: new Date(parsed.data.startDate),
+      endDate: new Date(parsed.data.endDate),
+      status: parsed.data.status,
       actorId: ctx.userId,
     });
     return NextResponse.json(

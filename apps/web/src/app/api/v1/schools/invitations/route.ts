@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { inviteStaff, InviteStaffSchema } from "@school-erp/platform";
+import { inviteStaff } from "@school-erp/platform";
+import { z } from "zod";
+
+const InviteStaffSchema = z.object({
+  email: z.string().email(),
+  roleId: z.string().uuid(),
+});
 
 export async function POST(request: Request) {
   return withApi(request, async (ctx) => {

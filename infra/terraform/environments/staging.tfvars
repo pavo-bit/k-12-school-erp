@@ -1,0 +1,13 @@
+project_id          = "school-erp-staging"
+region              = "asia-south1"
+environment         = "staging"
+billing_account_id  = "YOUR_BILLING_ACCOUNT_ID"
+db_password         = "staging-db-password-change-me"
+db_tier             = "db-custom-1-3840"
+web_min_instances   = 0
+web_max_instances   = 3
+worker_min_instances = 0
+worker_max_instances = 2
+enable_ha           = false
+backup_retention_days = 7
+pitr_days           = 3

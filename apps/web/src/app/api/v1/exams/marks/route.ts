@@ -1,29 +1,30 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import {
-  enterMarks,
-  getMarks,
-  submitMarks,
-  lockMarks,
-  computeResults,
-  getResults,
-} from "@school-erp/exams";
+import { createMarks, listMarks, updateMarks, createResult, listResults } from "@school-erp/exams";
 import { z } from "zod";
 
-const EnterMarksSchema = z.object({
+const CreateMarksSchema = z.object({
   examSubjectId: z.string().uuid(),
   studentId: z.string().uuid(),
+  theoryMarks: z.number().min(0),
+  practicalMarks: z.number().min(0).optional(),
+  status: z.enum(["draft", "submitted", "approved"]).optional(),
+});
+
+const UpdateMarksSchema = z.object({
+  id: z.string().uuid(),
   theoryMarks: z.number().min(0).optional(),
   practicalMarks: z.number().min(0).optional(),
+  status: z.enum(["draft", "submitted", "approved"]).optional(),
 });
 
-const SubmitMarksSchema = z.object({
-  examSubjectId: z.string().uuid(),
-  sectionId: z.string().uuid(),
-});
-
-const ComputeResultsSchema = z.object({
+const CreateResultSchema = z.object({
   examId: z.string().uuid(),
+  studentId: z.string().uuid(),
+  totalMarks: z.number().int().min(0),
+  percentage: z.number().min(0).max(100),
+  grade: z.string(),
+  resultStatus: z.enum(["passed", "failed", "conditional"]),
 });
 
 export async function GET(request: Request) {
@@ -36,12 +37,13 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const examSubjectId = url.searchParams.get("examSubjectId");
     const examId = url.searchParams.get("examId");
+    const studentId = url.searchParams.get("studentId") ?? undefined;
     if (examSubjectId) {
-      const marks = await getMarks(ctx.schoolId, examSubjectId);
+      const marks = await listMarks(ctx.schoolId, examSubjectId, studentId);
       return NextResponse.json({ data: marks, meta: { request_id: crypto.randomUUID() } });
     }
     if (examId) {
-      const results = await getResults(ctx.schoolId, examId);
+      const results = await listResults(ctx.schoolId, examId, studentId);
       return NextResponse.json({ data: results, meta: { request_id: crypto.randomUUID() } });
     }
     return NextResponse.json(
@@ -59,29 +61,43 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = EnterMarksSchema.safeParse(body);
-    if (!parsed.success)
+    const parsed = CreateMarksSchema.safeParse(body);
+    if (parsed.success) {
+      const marks = await createMarks({
+        schoolId: ctx.schoolId,
+        examSubjectId: parsed.data.examSubjectId,
+        studentId: parsed.data.studentId,
+        theoryMarks: parsed.data.theoryMarks,
+        practicalMarks: parsed.data.practicalMarks,
+        status: parsed.data.status,
+        enteredBy: ctx.userId,
+        enteredAt: new Date(),
+      });
       return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid input.",
-            details: parsed.error.flatten(),
-          },
-        },
-        { status: 400 },
+        { data: marks, meta: { request_id: crypto.randomUUID() } },
+        { status: 201 },
       );
-    const result = await enterMarks({
-      schoolId: ctx.schoolId,
-      examSubjectId: parsed.data.examSubjectId,
-      studentId: parsed.data.studentId,
-      theoryMarks: parsed.data.theoryMarks,
-      practicalMarks: parsed.data.practicalMarks,
-      enteredBy: ctx.userId,
-    });
+    }
+    const resultParsed = CreateResultSchema.safeParse(body);
+    if (resultParsed.success) {
+      const result = await createResult({
+        schoolId: ctx.schoolId,
+        examId: resultParsed.data.examId,
+        studentId: resultParsed.data.studentId,
+        totalMarks: resultParsed.data.totalMarks,
+        percentage: resultParsed.data.percentage,
+        grade: resultParsed.data.grade,
+        resultStatus: resultParsed.data.resultStatus,
+        actorId: ctx.userId,
+      });
+      return NextResponse.json(
+        { data: result, meta: { request_id: crypto.randomUUID() } },
+        { status: 201 },
+      );
+    }
     return NextResponse.json(
-      { data: result, meta: { request_id: crypto.randomUUID() } },
-      { status: 201 },
+      { error: { code: "VALIDATION_ERROR", message: "Invalid input." } },
+      { status: 400 },
     );
   });
 }
@@ -94,28 +110,23 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = SubmitMarksSchema.safeParse(body);
-    if (parsed.success) {
-      const result = await submitMarks(
-        ctx.schoolId,
-        parsed.data.examSubjectId,
-        parsed.data.sectionId,
-        ctx.userId,
+    const parsed = UpdateMarksSchema.safeParse(body);
+    if (!parsed.success)
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid input.",
+            details: parsed.error.flatten(),
+          },
+        },
+        { status: 400 },
       );
-      return NextResponse.json({ data: result, meta: { request_id: crypto.randomUUID() } });
-    }
-    const computeParsed = ComputeResultsSchema.safeParse(body);
-    if (computeParsed.success) {
-      const results = await computeResults({
-        schoolId: ctx.schoolId,
-        examId: computeParsed.data.examId,
-        actorId: ctx.userId,
-      });
-      return NextResponse.json({ data: results, meta: { request_id: crypto.randomUUID() } });
-    }
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: "Invalid input." } },
-      { status: 400 },
-    );
+    const marks = await updateMarks(parsed.data.id, {
+      theoryMarks: parsed.data.theoryMarks,
+      practicalMarks: parsed.data.practicalMarks,
+      status: parsed.data.status,
+    }, ctx.userId);
+    return NextResponse.json({ data: marks, meta: { request_id: crypto.randomUUID() } });
   });
 }

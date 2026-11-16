@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       admissionNumber: parsed.data.admissionNumber,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
-      dateOfBirth: parsed.data.dateOfBirth,
+      dateOfBirth: new Date(parsed.data.dateOfBirth),
       gender: parsed.data.gender,
       actorId: ctx.userId,
     });

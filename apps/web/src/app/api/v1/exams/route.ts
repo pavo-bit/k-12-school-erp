@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { createExam, listExams, updateExamStatus } from "@school-erp/exams";
+import { createExam, listExams, updateExam } from "@school-erp/exams";
 import { z } from "zod";
 
 const CreateExamSchema = z.object({
   termId: z.string().uuid(),
-  name: z.string().min(1).max(120),
-  type: z.string().min(1).max(40),
+  name: z.string().min(1).max(200),
+  type: z.enum(["theory", "practical", "both", "internal", "external"]),
+  status: z.enum(["draft", "scheduled", "conducted", "completed"]).optional(),
 });
 
-const UpdateStatusSchema = z.object({
-  examId: z.string().uuid(),
-  status: z.enum(["draft", "published", "archived"]),
+const UpdateExamSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(200).optional(),
+  type: z.enum(["theory", "practical", "both", "internal", "external"]).optional(),
+  status: z.enum(["draft", "scheduled", "conducted", "completed"]).optional(),
 });
 
 export async function GET(request: Request) {
@@ -53,6 +56,7 @@ export async function POST(request: Request) {
       termId: parsed.data.termId,
       name: parsed.data.name,
       type: parsed.data.type,
+      status: parsed.data.status,
       actorId: ctx.userId,
     });
     return NextResponse.json(
@@ -70,7 +74,7 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = UpdateStatusSchema.safeParse(body);
+    const parsed = UpdateExamSchema.safeParse(body);
     if (!parsed.success)
       return NextResponse.json(
         {
@@ -82,12 +86,11 @@ export async function PATCH(request: Request) {
         },
         { status: 400 },
       );
-    const exam = await updateExamStatus(
-      ctx.schoolId,
-      parsed.data.examId,
-      parsed.data.status,
-      ctx.userId,
-    );
+    const exam = await updateExam(parsed.data.id, {
+      name: parsed.data.name,
+      type: parsed.data.type,
+      status: parsed.data.status,
+    }, ctx.userId);
     return NextResponse.json({ data: exam, meta: { request_id: crypto.randomUUID() } });
   });
 }

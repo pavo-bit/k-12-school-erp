@@ -7,12 +7,13 @@ const CreateFeeStructureSchema = z.object({
   academicYearId: z.string().uuid(),
   classId: z.string().uuid(),
   name: z.string().min(1).max(120),
-  lines: z
+  feeStructureLines: z
     .array(
       z.object({
         feeHeadId: z.string().uuid(),
         amountPaise: z.number().int().positive(),
         frequency: z.string().default("annual"),
+        dueRule: z.string().default("immediate"),
       }),
     )
     .min(1),
@@ -25,7 +26,9 @@ export async function GET(request: Request) {
         { error: { code: "TENANT_REQUIRED", message: "School context required." } },
         { status: 400 },
       );
-    const structures = await listFeeStructures(ctx.schoolId);
+    const url = new URL(request.url);
+    const academicYearId = url.searchParams.get("academicYearId") ?? undefined;
+    const structures = await listFeeStructures(ctx.schoolId, academicYearId);
     return NextResponse.json({ data: structures, meta: { request_id: crypto.randomUUID() } });
   });
 }
@@ -55,7 +58,8 @@ export async function POST(request: Request) {
       academicYearId: parsed.data.academicYearId,
       classId: parsed.data.classId,
       name: parsed.data.name,
-      lines: parsed.data.lines,
+      status: "active",
+      feeStructureLines: parsed.data.feeStructureLines,
       actorId: ctx.userId,
     });
     return NextResponse.json(

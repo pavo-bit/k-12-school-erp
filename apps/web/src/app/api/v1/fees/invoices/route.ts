@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { generateInvoice, listInvoices } from "@school-erp/fees";
+import { createInvoice, listInvoices } from "@school-erp/fees";
 import { z } from "zod";
 
-const GenerateInvoiceSchema = z.object({
+const CreateInvoiceSchema = z.object({
   studentId: z.string().uuid(),
   academicYearId: z.string().uuid(),
-  feeStructureId: z.string().uuid(),
+  financialYear: z.string().min(1).max(20),
+  invoiceNumber: z.string().min(1).max(50),
+  issueDate: z.string().datetime(),
+  dueDate: z.string().datetime(),
+  status: z.enum(["draft", "issued", "partial", "paid", "overdue", "cancelled"]).optional(),
+  invoiceLines: z.array(z.object({
+    feeHeadId: z.string().uuid(),
+    amountPaise: z.number().int().min(0),
+    concessionPaise: z.number().int().min(0),
+    netPaise: z.number().int().min(0),
+  })).min(1),
 });
 
 export async function GET(request: Request) {
@@ -18,7 +28,8 @@ export async function GET(request: Request) {
       );
     const url = new URL(request.url);
     const studentId = url.searchParams.get("studentId") ?? undefined;
-    const invoices = await listInvoices(ctx.schoolId, studentId);
+    const status = url.searchParams.get("status") ?? undefined;
+    const invoices = await listInvoices(ctx.schoolId, studentId, status);
     return NextResponse.json({ data: invoices, meta: { request_id: crypto.randomUUID() } });
   });
 }
@@ -31,7 +42,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = GenerateInvoiceSchema.safeParse(body);
+    const parsed = CreateInvoiceSchema.safeParse(body);
     if (!parsed.success)
       return NextResponse.json(
         {
@@ -43,11 +54,16 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const invoice = await generateInvoice({
+    const invoice = await createInvoice({
       schoolId: ctx.schoolId,
       studentId: parsed.data.studentId,
       academicYearId: parsed.data.academicYearId,
-      feeStructureId: parsed.data.feeStructureId,
+      financialYear: parsed.data.financialYear,
+      invoiceNumber: parsed.data.invoiceNumber,
+      issueDate: new Date(parsed.data.issueDate),
+      dueDate: new Date(parsed.data.dueDate),
+      status: parsed.data.status ?? "issued",
+      invoiceLines: parsed.data.invoiceLines,
       actorId: ctx.userId,
     });
     return NextResponse.json(

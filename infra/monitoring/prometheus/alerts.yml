@@ -1,0 +1,84 @@
+groups:
+  - name: school-erp-alerts
+    rules:
+      # P1 - Page immediately
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate"
+          description: "Error rate is above 5% for 5 minutes"
+
+      - alert: DatabaseDown
+        expr: db_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database is down"
+          description: "Database health check is failing"
+
+      - alert: SiteDown
+        expr: up{job="school-erp-web"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Web service is down"
+          description: "Web service is not responding"
+
+      - alert: HighLatency
+        expr: http_request_duration_seconds{quantile="0.95"} > 0.8
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency"
+          description: "p95 latency is above 800ms for 15 minutes"
+
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connections high"
+          description: "Active database connections above 80%"
+
+      - alert: DatabaseCPUHigh
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database CPU high"
+          description: "Database CPU usage above 80% for 15 minutes"
+
+      - alert: DiskUsageHigh
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk usage critical"
+          description: "Disk usage above 90%"
+
+      - alert: MemoryUsageHigh
+        expr: process_memory_heap_used_bytes / process_memory_heap_total_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory usage high"
+          description: "Heap memory usage above 90%"
+
+      - alert: QueueBacklog
+        expr: outbox_pending_count > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue backlog growing"
+          description: "Outbox pending count above 100 for 10 minutes"

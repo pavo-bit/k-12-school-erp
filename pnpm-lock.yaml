@@ -163,6 +163,9 @@ importers:
       expo-router:
         specifier: ~4.0.0
         version: 4.0.22(2kltgbxczu5hy4sqnjjz2jcy2i)
+      expo-secure-store:
+        specifier: ^58.0.3
+        version: 58.0.3(expo@52.0.49(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@expo/metro-runtime@4.0.1(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1)))(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1))(react@18.3.1))
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -170,6 +173,9 @@ importers:
         specifier: 0.76.0
         version: 0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1)
     devDependencies:
+      "@types/node":
+        specifier: ^22.10.0
+        version: 22.20.5
       "@types/react":
         specifier: ~18.3.12
         version: 18.3.31
@@ -6260,6 +6266,14 @@ packages:
         optional: true
       react-native-reanimated:
         optional: true
+
+  expo-secure-store@58.0.3:
+    resolution:
+      {
+        integrity: sha512-RpubZfqJREEcwKbx3HFoWbtDd31t+yESMj7Ei5/mGQp5vViwUBzL4nUCZRLFyt+O690mT8We7dDtIUZeIk6LbQ==,
+      }
+    peerDependencies:
+      expo: "*"
 
   expo@52.0.49:
     resolution:
@@ -14097,6 +14111,10 @@ snapshots:
       - react-native
       - supports-color
       - webpack
+
+  expo-secure-store@58.0.3(expo@52.0.49(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@expo/metro-runtime@4.0.1(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1)))(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)):
+    dependencies:
+      expo: 52.0.49(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@expo/metro-runtime@4.0.1(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1)))(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1))(react@18.3.1)
 
   expo@52.0.49(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@expo/metro-runtime@4.0.1(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1)))(react-native@0.76.0(@babel/core@7.29.13)(@babel/preset-env@7.29.14(@babel/core@7.29.13))(@types/react@18.3.31)(react@18.3.1))(react@18.3.1):
     dependencies:

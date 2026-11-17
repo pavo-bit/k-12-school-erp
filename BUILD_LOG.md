@@ -58,6 +58,8 @@
 - Verified: announcement created → send → status "sent" with sent_at, notification record with status "delivered", console log output.
 - Re-added missing admissions routes: GET/POST /api/v1/admissions/enquiries, GET/POST/PATCH /api/v1/admissions/applications; added GET /api/v1/fees/payments.
 - Verified all 16 core GET endpoints return 200; verified enquiry → application creation flow end-to-end.
+- Built Expo mobile app: root layout with AuthProvider; cookie-based session persistence via SecureStore; login screen (email/password); authenticated Stack with home, students, and fees screens; API client wired to EXPO_PUBLIC_API_URL with automatic cookie session handling.
+- Mobile app is structured to work against the local dev API (phone login → students list → fee invoices); typecheck and lint pass. Device testing requires Android Studio and a running dev server.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

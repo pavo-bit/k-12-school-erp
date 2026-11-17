@@ -1,4 +1,4 @@
-# Technology Stack
+﻿# Technology Stack
 
 **Status:** Baseline  
 **Owner:** Engineering  
@@ -17,52 +17,52 @@
 
 ## 2. Core Stack
 
-| Layer           | Choice                          | Indicative version     | Notes                                               |
-| --------------- | ------------------------------- | ---------------------- | --------------------------------------------------- |
-| Language        | TypeScript                      | 5.x                    | `strict`, `noUncheckedIndexedAccess`                |
-| Runtime         | Node.js LTS                     | 22 or newer LTS        | Pinned in `.nvmrc`, Dockerfile, and CI              |
-| Package manager | pnpm                            | 9+                     | Workspace protocol, frozen lockfile in CI           |
-| Monorepo        | Turborepo                       | Current stable         | Task graph and remote cache optional                |
-| Web framework   | Next.js App Router              | 15+                    | Server components, route handlers, streaming        |
-| UI runtime      | React                           | 19+                    | Matches Next.js requirement                         |
-| Styling         | Tailwind CSS                    | 4.x                    | Design tokens via CSS variables                     |
-| Components      | shadcn/ui + Radix               | Current                | Copied into repo, not a black-box dependency        |
-| Icons           | Lucide                          | Current                | Consistent stroke style                             |
-| Forms           | React Hook Form + Zod           | Current                | Shared schemas between client and server            |
-| Tables          | TanStack Table                  | v8                     | Server-side pagination and sorting                  |
-| Charts          | Recharts                        | Current                | Dashboard and report visuals                        |
-| Database        | PostgreSQL                      | 16                     | Cloud SQL; local Docker image matches major version |
-| ORM / query     | Drizzle ORM + SQL               | Current                | Typed schema, SQL-first migrations                  |
-| Migrations      | Drizzle Kit + custom SQL        | Current                | Expand/contract, reviewed in PRs                    |
-| Auth            | Better Auth                     | Current                | Postgres adapter, sessions, OTP, TOTP               |
-| Validation      | Zod                             | 3.x/4.x                | All external input validated                        |
-| API docs        | OpenAPI 3.1                     | —                      | Generated from Zod/route metadata                   |
-| Background jobs | Cloud Tasks + Cloud Run         | —                      | Transactional outbox                                |
-| PDF             | Chromium + `puppeteer-core`     | Chromium stable        | Dedicated `pdf-worker`                              |
-| Email templates | React Email                     | Current                | Rendered server-side                                |
-| Mobile          | Expo + React Native             | SDK current at kickoff | One codebase, two app variants                      |
-| Mobile routing  | Expo Router                     | Current                | File-based navigation                               |
-| Mobile state    | TanStack Query + Zustand        | Current                | Server cache + small local UI state                 |
-| Mobile storage  | Expo SQLite + SQLCipher         | Current                | Encrypted attendance cache                          |
-| Secure storage  | Expo SecureStore                | Current                | Tokens and keys                                     |
-| Push            | Firebase Cloud Messaging        | —                      | `expo-notifications` + FCM                          |
-| Payments        | Razorpay                        | —                      | Orders, checkout SDK, webhooks, refunds             |
-| Email           | Resend                          | —                      | Verified domain, SPF/DKIM/DMARC                     |
-| SMS             | MSG91                           | —                      | DLT entity, sender ID, templates                    |
-| WhatsApp        | BSP (TBD)                       | —                      | Approved templates, webhooks                        |
-| Error tracking  | Sentry                          | —                      | Web, worker, mobile                                 |
-| Logging/metrics | Google Cloud Logging/Monitoring | —                      | Structured JSON logs                                |
-| IaC             | Terraform                       | 1.9+                   | Remote state in GCS                                 |
-| CI/CD           | GitHub Actions                  | —                      | OIDC to GCP, no long-lived keys                     |
-| Testing         | Vitest, Playwright, Maestro, k6 | Current                | Unit, E2E, mobile, load                             |
-| Lint/format     | ESLint, Prettier                | Current                | Pre-commit hooks via Husky + lint-staged            |
-| API client      | Typed fetch wrapper             | In-house               | Generated from OpenAPI where practical              |
-| i18n web        | next-intl                       | Current                | App Router integration                              |
-| i18n mobile     | i18next + react-i18next         | Current                | Device language and in-app switch                   |
-| Dates           | date-fns + date-fns-tz          | Current                | `Asia/Kolkata` default                              |
-| Money           | Integer paise + helper module   | In-house               | No floating point                                   |
-| IDs             | UUIDv7                          | —                      | Time-sortable, generated in app                     |
-| Search          | PostgreSQL `pg_trgm` + indexes  | —                      | No separate search cluster at launch                |
+| Layer           | Choice                          | Indicative version     | Notes                                                          |
+| --------------- | ------------------------------- | ---------------------- | -------------------------------------------------------------- |
+| Language        | TypeScript                      | 5.x                    | `strict`, `noUncheckedIndexedAccess`                           |
+| Runtime         | Node.js LTS                     | 22 or newer LTS        | Pinned in `.nvmrc`, Dockerfile, and CI                         |
+| Package manager | pnpm                            | 9+                     | Workspace protocol, frozen lockfile in CI                      |
+| Monorepo        | Turborepo                       | Current stable         | Task graph and remote cache optional                           |
+| Web framework   | Next.js App Router              | 15+                    | Server components, route handlers, streaming                   |
+| UI runtime      | React                           | 19+                    | Matches Next.js requirement                                    |
+| Styling         | Tailwind CSS                    | 4.x                    | Design tokens via CSS variables                                |
+| Components      | shadcn/ui + Radix               | Current                | Copied into repo, not a black-box dependency                   |
+| Icons           | Lucide                          | Current                | Consistent stroke style                                        |
+| Forms           | React Hook Form + Zod           | Current                | Shared schemas between client and server                       |
+| Tables          | TanStack Table                  | v8                     | Server-side pagination and sorting                             |
+| Charts          | Recharts                        | Current                | Dashboard and report visuals                                   |
+| Database        | PostgreSQL                      | 16                     | Aurora Serverless v2; local Docker image matches major version |
+| ORM / query     | Drizzle ORM + SQL               | Current                | Typed schema, SQL-first migrations                             |
+| Migrations      | Drizzle Kit + custom SQL        | Current                | Expand/contract, reviewed in PRs                               |
+| Auth            | Better Auth                     | Current                | Postgres adapter, sessions, OTP, TOTP                          |
+| Validation      | Zod                             | 3.x/4.x                | All external input validated                                   |
+| API docs        | OpenAPI 3.1                     | —                      | Generated from Zod/route metadata                              |
+| Background jobs | SQS + Lambda                    | —                      | Transactional outbox                                           |
+| PDF             | Chromium + `puppeteer-core`     | Chromium stable        | Dedicated `pdf-worker`                                         |
+| Email templates | React Email                     | Current                | Rendered server-side                                           |
+| Mobile          | Expo + React Native             | SDK current at kickoff | One codebase, two app variants                                 |
+| Mobile routing  | Expo Router                     | Current                | File-based navigation                                          |
+| Mobile state    | TanStack Query + Zustand        | Current                | Server cache + small local UI state                            |
+| Mobile storage  | Expo SQLite + SQLCipher         | Current                | Encrypted attendance cache                                     |
+| Secure storage  | Expo SecureStore                | Current                | Tokens and keys                                                |
+| Push            | Firebase Cloud Messaging        | —                      | `expo-notifications` + FCM                                     |
+| Payments        | Razorpay                        | —                      | Orders, checkout SDK, webhooks, refunds                        |
+| Email           | Resend                          | —                      | Verified domain, SPF/DKIM/DMARC                                |
+| SMS             | MSG91                           | —                      | DLT entity, sender ID, templates                               |
+| WhatsApp        | BSP (TBD)                       | —                      | Approved templates, webhooks                                   |
+| Error tracking  | Sentry                          | —                      | Web, worker, mobile                                            |
+| Logging/metrics | Google Cloud Logging/Monitoring | —                      | Structured JSON logs                                           |
+| IaC             | Terraform                       | 1.9+                   | Remote state in GCS                                            |
+| CI/CD           | GitHub Actions                  | —                      | OIDC to GCP, no long-lived keys                                |
+| Testing         | Vitest, Playwright, Maestro, k6 | Current                | Unit, E2E, mobile, load                                        |
+| Lint/format     | ESLint, Prettier                | Current                | Pre-commit hooks via Husky + lint-staged                       |
+| API client      | Typed fetch wrapper             | In-house               | Generated from OpenAPI where practical                         |
+| i18n web        | next-intl                       | Current                | App Router integration                                         |
+| i18n mobile     | i18next + react-i18next         | Current                | Device language and in-app switch                              |
+| Dates           | date-fns + date-fns-tz          | Current                | `Asia/Kolkata` default                                         |
+| Money           | Integer paise + helper module   | In-house               | No floating point                                              |
+| IDs             | UUIDv7                          | —                      | Time-sortable, generated in app                                |
+| Search          | PostgreSQL `pg_trgm` + indexes  | —                      | No separate search cluster at launch                           |
 
 ## 3. Why These Choices
 
@@ -188,7 +188,7 @@ Provider adapters live in `packages/modules/communication/providers` and `packag
 ## 10. Related Documents
 
 - [04-system-architecture.md](04-system-architecture.md)
-- [06-gcp-infrastructure.md](06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](06-aws-infrastructure.md)
 - [13-cicd-and-release-management.md](13-cicd-and-release-management.md)
 - [20-engineering-standards.md](20-engineering-standards.md)
 - [22-local-development.md](22-local-development.md)

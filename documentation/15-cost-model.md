@@ -1,10 +1,10 @@
-# Cost Model
+﻿# Cost Model
 
 **Status:** Baseline  
 **Owner:** Founders  
 **Currency:** INR  
 **Budget target:** ₹15,000–30,000 per month for GCP and vendors, excluding SMS/WhatsApp usage, payment fees, salaries, and one-time costs  
-**Related:** [06-gcp-infrastructure.md](06-gcp-infrastructure.md), [14-observability-and-operations.md](14-observability-and-operations.md), [16-delivery-roadmap.md](16-delivery-roadmap.md)
+**Related:** [06-aws-infrastructure.md](06-aws-infrastructure.md), [14-observability-and-operations.md](14-observability-and-operations.md), [16-delivery-roadmap.md](16-delivery-roadmap.md)
 
 ---
 
@@ -256,6 +256,6 @@ At 5 schools (5,000 students) and ₹200/student/year, revenue is ₹10 lakh/yea
 ## 16. Related Documents
 
 - [00-executive-summary.md](00-executive-summary.md)
-- [06-gcp-infrastructure.md](06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](06-aws-infrastructure.md)
 - [14-observability-and-operations.md](14-observability-and-operations.md)
 - [16-delivery-roadmap.md](16-delivery-roadmap.md)

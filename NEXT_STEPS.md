@@ -3,6 +3,7 @@
 ## Current Status: Phase 0 Complete ✅
 
 All foundation work has been completed. The project now has:
+
 - ✅ Monorepo structure
 - ✅ Database schema with RLS
 - ✅ Better Auth integration
@@ -14,11 +15,13 @@ All foundation work has been completed. The project now has:
 ## Immediate Next Steps (Phase 1)
 
 ### 1. Complete Better Auth Integration
+
 **Status:** Partially done
 **Priority:** High
 **Owner:** Tech Lead
 
 Tasks:
+
 - [ ] Finish Better Auth configuration
 - [ ] Replace dev-auth with Better Auth in all routes
 - [ ] Implement mobile JWT authentication
@@ -26,11 +29,13 @@ Tasks:
 - [ ] Test invitation system
 
 ### 2. Implement Full Tenant Middleware
+
 **Status:** Partially done
 **Priority:** High
 **Owner:** Tech Lead
 
 Tasks:
+
 - [ ] Apply `withTenantContext` to all API routes
 - [ ] Update route handlers to use new context
 - [ ] Add origin validation to all endpoints
@@ -38,6 +43,7 @@ Tasks:
 - [ ] Document middleware usage
 
 ### 3. Complete Module Implementations
+
 **Status:** Partially done
 **Priority:** High
 **Owner:** All Founders
@@ -45,6 +51,7 @@ Tasks:
 Tasks by module:
 
 #### Platform Module
+
 - [ ] Organization CRUD operations
 - [ ] School creation and configuration
 - [ ] Academic year management
@@ -52,6 +59,7 @@ Tasks by module:
 - [ ] Import/export functionality
 
 #### SIS Module
+
 - [ ] Student management (full CRUD)
 - [ ] Guardian management
 - [ ] Enrollment system
@@ -59,6 +67,7 @@ Tasks by module:
 - [ ] Search and filtering
 
 #### Fees Module
+
 - [ ] Fee head management
 - [ ] Fee structure creation
 - [ ] Invoice generation
@@ -67,6 +76,7 @@ Tasks by module:
 - [ ] Dues tracking
 
 #### Attendance Module
+
 - [ ] Daily attendance
 - [ ] Holiday management
 - [ ] Attendance registers
@@ -74,6 +84,7 @@ Tasks by module:
 - [ ] Attendance corrections
 
 #### HR Module
+
 - [ ] Staff records
 - [ ] Leave management
 - [ ] Salary structures
@@ -81,6 +92,7 @@ Tasks by module:
 - [ ] Payslip generation
 
 #### Communication Module
+
 - [ ] Notification templates
 - [ ] Email/SMS/WhatsApp support
 - [ ] Announcement system
@@ -88,6 +100,7 @@ Tasks by module:
 - [ ] Opt-out management
 
 #### Exams Module
+
 - [ ] Exam term management
 - [ ] Exam creation
 - [ ] Subject configuration
@@ -96,12 +109,14 @@ Tasks by module:
 - [ ] Report card templates
 
 #### Admissions Module
+
 - [ ] Enquiry management
 - [ ] Application workflow
 - [ ] Document upload
 - [ ] Conversion tracking
 
 #### Reports Module
+
 - [ ] Basic dashboards
 - [ ] Attendance summaries
 - [ ] Fee collection reports
@@ -111,6 +126,7 @@ Tasks by module:
 ## Testing Requirements
 
 ### Phase 1 Gate Criteria (March 31, 2027)
+
 - [ ] **Foundation:** GCP, CI, auth, tenancy, skeleton working
 - [ ] **SIS:** Student/guardian records, enrollment working
 - [ ] **Fees:** Fee heads, structures, invoices, payments working
@@ -128,17 +144,20 @@ Tasks by module:
 ## Technical Debt
 
 ### Immediate
+
 1. Replace dev-auth with Better Auth (high priority)
 2. Apply tenant middleware to all routes (high priority)
 3. Complete module implementations (high priority)
 
 ### Medium Priority
+
 1. Add more comprehensive audit tests
 2. Implement offline sync for mobile
 3. Add error boundary components
 4. Implement proper logging
 
 ### Low Priority
+
 1. Add performance monitoring
 2. Implement caching strategy
 3. Add rate limiting
@@ -149,18 +168,21 @@ Tasks by module:
 See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 
 ### Critical (block Phase 1)
+
 - [ ] Regional language selection
 - [ ] Pilot school profiles and LOIs
 - [ ] Domain name and ownership
 - [ ] WhatsApp BSP provider
 
 ### Important (affect UX)
+
 - [ ] Report-card templates
 - [ ] Offline attendance for yesterday
 - [ ] Teacher authentication method
 - [ ] Receipt sharing policy
 
 ### Technical
+
 - [ ] Cloudflare paid tier trigger
 - [ ] Cloud SQL HA trigger
 - [ ] Log retention policy
@@ -169,18 +191,21 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 ## Development Workflow
 
 ### Daily
+
 - [ ] Review and merge PRs
 - [ ] Run tests
 - [ ] Update documentation
 - [ ] Check build status
 
 ### Weekly
+
 - [ ] Sprint planning
 - [ ] Code review
 - [ ] Demo to stakeholders
 - [ ] Update roadmap
 
 ### Monthly
+
 - [ ] Cost review
 - [ ] Security review
 - [ ] Hiring review
@@ -189,18 +214,21 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 ## Deployment Strategy
 
 ### Staging
+
 - [ ] Deploy to staging after each PR
 - [ ] Run integration tests
 - [ ] Manual UAT
 - [ ] Documentation updates
 
 ### Production
+
 - [ ] Deploy after Phase 1 gate
 - [ ] 5-10 pilot schools
 - [ ] Intensive support
 - [ ] Daily monitoring
 
 ### Rollout Plan
+
 1. **Internal Alpha:** Synthetic data, dogfooding
 2. **Pilot Beta:** 1-2 schools, June 2027
 3. **GA:** 5-10 schools, October 2027
@@ -209,6 +237,7 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 ## Success Metrics
 
 ### Product
+
 - [ ] Attendance marked in under 60 seconds
 - [ ] Parent fee payment in under 2 minutes
 - [ ] Report cards generated without blocking
@@ -216,12 +245,14 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 - [ ] Teacher app usage > 80%
 
 ### Engineering
+
 - [ ] 99.5% uptime (beta), 99.9% (GA)
 - [ ] p95 < 800ms for core pages
 - [ ] Zero cross-tenant incidents
 - [ ] All tests passing
 
 ### Business
+
 - [ ] 5-10 paying schools by GA
 - [ ] Pilot schools renew
 - [ ] Revenue covers GCP costs
@@ -230,14 +261,17 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 ## Resources Needed
 
 ### Team
+
 - [ ] Mobile engineer (Jan 2027)
 - [ ] QA engineer (Feb 2027)
 
 ### Budget
+
 - [ ] ₹15-30k/month GCP + vendors
 - [ ] ₹3-5 lakh one-time (pen-test, legal)
 
 ### Infrastructure
+
 - [ ] GCP Mumbai setup
 - [ ] Cloudflare account
 - [ ] Domain name
@@ -249,16 +283,19 @@ See `documentation/23-open-decisions.md` for 50+ decisions that need resolution:
 ## Risk Mitigation
 
 ### High Risk
+
 - **Hiring delays:** Start immediately; move dates if needed
 - **Scope creep:** Freeze beta/GA scope; post-GA backlog
 - **Cloudflare limits:** Monitor; upgrade if needed
 
 ### Medium Risk
+
 - **Single-zone DB:** PITR, backups, restore drills
 - **Offline sync conflicts:** Attendance only, idempotency
 - **Payroll compliance:** CA validation
 
 ### Low Risk
+
 - **Report card correctness:** Golden tests, school sign-off
 - **App store rejection:** Submit early, privacy review
 - **SMS/WhatsApp delay:** Start DLT in December

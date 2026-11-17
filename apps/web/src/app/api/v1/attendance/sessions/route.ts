@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { createAttendanceSession, listAttendanceSessions } from "@school-erp/attendance";
+import { createSession, listAttendanceSessions } from "@school-erp/attendance";
 import { z } from "zod";
 
-const CreateAttendanceSessionSchema = z.object({
+const CreateSessionSchema = z.object({
   sectionId: z.string().uuid(),
-  date: z.string().datetime(),
-  sessionType: z.string().min(1).max(50),
-  status: z.enum(["open", "closed", "submitted"]).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  sessionType: z.string().default("daily"),
 });
 
 export async function GET(request: Request) {
@@ -19,8 +18,8 @@ export async function GET(request: Request) {
       );
     const url = new URL(request.url);
     const sectionId = url.searchParams.get("sectionId") ?? undefined;
-    const date = url.searchParams.get("date");
-    const sessions = await listAttendanceSessions(ctx.schoolId, sectionId, date ? new Date(date) : undefined);
+    const date = url.searchParams.get("date") ?? undefined;
+    const sessions = await listAttendanceSessions(ctx.schoolId, sectionId, date);
     return NextResponse.json({ data: sessions, meta: { request_id: crypto.randomUUID() } });
   });
 }
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = CreateAttendanceSessionSchema.safeParse(body);
+    const parsed = CreateSessionSchema.safeParse(body);
     if (!parsed.success)
       return NextResponse.json(
         {
@@ -45,13 +44,13 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const session = await createAttendanceSession({
+    const session = await createSession({
       schoolId: ctx.schoolId,
       sectionId: parsed.data.sectionId,
-      date: new Date(parsed.data.date),
+      date: parsed.data.date,
       sessionType: parsed.data.sessionType,
-      status: parsed.data.status ?? "open",
       submittedBy: ctx.userId,
+      actorId: ctx.userId,
     });
     return NextResponse.json(
       { data: session, meta: { request_id: crypto.randomUUID() } },

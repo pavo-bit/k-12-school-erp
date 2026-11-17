@@ -25,7 +25,11 @@ export const OrganizationResponseSchema = z.object({
 export const CreateSchoolSchema = z.object({
   organizationId: z.string().uuid(),
   name: z.string().min(1).max(200),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens"),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens"),
   board: z.enum(["CBSE", "ICSE", "State", "IB", "IGCSE"]).optional(),
   timezone: z.string().default("Asia/Kolkata"),
   locale: z.enum(["en", "hi", "mr"]).default("en"),
@@ -33,7 +37,12 @@ export const CreateSchoolSchema = z.object({
 
 export const UpdateSchoolSchema = z.object({
   name: z.string().min(1).max(200).optional(),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   board: z.enum(["CBSE", "ICSE", "State", "IB", "IGCSE"]).optional(),
   timezone: z.string().optional(),
   locale: z.enum(["en", "hi", "mr"]).optional(),
@@ -102,10 +111,10 @@ export const UpdateAcademicYearSchema = z.object({
 // School Settings schemas
 export const SchoolSettingsSchema = z.object({
   key: z.string(),
-  value: z.union([z.string(), z.number(), z.boolean(), z.object({} as Record<string, unknown>)]),
+  value: z.union([z.string(), z.number(), z.boolean(), z.record(z.unknown())]),
 });
 
 export const SchoolSettingsUpdateSchema = z.object({
   key: z.string(),
-  value: z.union([z.string(), z.number(), z.boolean(), z.object({} as Record<string, unknown>)]),
+  value: z.union([z.string(), z.number(), z.boolean(), z.record(z.unknown())]),
 });

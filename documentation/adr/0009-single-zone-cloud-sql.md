@@ -1,9 +1,9 @@
-# ADR-0009: Single-Zone Cloud SQL Until 10 Schools
+﻿# ADR-0009: Single-Zone Cloud SQL Until 10 Schools
 
 - **Status:** Accepted
 - **Date:** 14 November 2026
 - **Owner:** Founder 1
-- **Related:** [../06-gcp-infrastructure.md](../06-gcp-infrastructure.md), [../15-cost-model.md](../15-cost-model.md), [../19-risk-register.md](../19-risk-register.md)
+- **Related:** [../06-aws-infrastructure.md](../06-aws-infrastructure.md), [../15-cost-model.md](../15-cost-model.md), [../19-risk-register.md](../19-risk-register.md)
 
 ---
 
@@ -60,6 +60,6 @@ Move to **HA (regional)** at 10 paying schools, a contractual 99.9% requirement,
 
 ## References
 
-- [06-gcp-infrastructure.md](../06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](../06-aws-infrastructure.md)
 - [15-cost-model.md](../15-cost-model.md)
 - [19-risk-register.md](../19-risk-register.md)

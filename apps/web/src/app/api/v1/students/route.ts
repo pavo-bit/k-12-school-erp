@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { createStudent, listStudents, CreateStudentSchema } from "@school-erp/sis";
+import { createStudent, listStudents } from "@school-erp/sis";
+import { z } from "zod";
+
+const CreateStudentSchema = z.object({
+  admissionNumber: z.string().min(1).max(40),
+  firstName: z.string().min(1).max(80),
+  lastName: z.string().min(1).max(80),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  gender: z.enum(["male", "female", "other"]),
+});
 
 export async function GET(request: Request) {
   return withApi(request, async (ctx) => {
@@ -44,7 +53,7 @@ export async function POST(request: Request) {
       admissionNumber: parsed.data.admissionNumber,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
-      dateOfBirth: new Date(parsed.data.dateOfBirth),
+      dateOfBirth: parsed.data.dateOfBirth,
       gender: parsed.data.gender,
       actorId: ctx.userId,
     });

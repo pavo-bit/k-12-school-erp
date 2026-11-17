@@ -3,7 +3,7 @@
 **Project:** School ERP — multi-tenant SaaS for Indian K-12 day schools  
 **Delivery:** 10–12 months; pilot beta June 2027; GA October 2027  
 **Team:** 3 founders (all full-time) + one in-house mobile engineer + one in-house QA engineer  
-**Cloud:** GCP Mumbai, Cloud Run, Cloud SQL PostgreSQL, Cloudflare, Expo mobile apps  
+**Cloud:** AWS Mumbai, Lambda, Aurora Serverless PostgreSQL, CloudFront, Expo mobile apps  
 **Run-rate target:** ₹15–30k/month for GCP and vendors, excluding SMS/WhatsApp usage and payment fees
 
 ---

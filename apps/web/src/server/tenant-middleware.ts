@@ -181,7 +181,8 @@ export function secureTenantMiddleware(
       {
         error: {
           code: "FORBIDDEN",
-          message: "Direct access to this endpoint is not allowed. Please use the configured domain.",
+          message:
+            "Direct access to this endpoint is not allowed. Please use the configured domain.",
         },
       },
       { status: 403 },

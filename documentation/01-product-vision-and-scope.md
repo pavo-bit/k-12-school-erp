@@ -204,10 +204,10 @@ These are planning assumptions, not final pricing:
 - The team is in-house: three founders plus one mobile engineer and one QA engineer; the capacity plan assumes all three founders are full-time.
 - If only two founders are full-time, reduce scope or move the beta and GA dates; the plan has no spare capacity.
 - No development contractors.
-- GCP Mumbai is the primary region.
-- Cloudflare free plan is the edge provider at launch.
-- Single-zone Cloud SQL until 10 schools; HA is a planned trigger, not day-one.
-- Staging shares the GCP project and Cloud SQL instance with strict isolation guardrails.
+- AWS Mumbai (`ap-south-1`) is the primary region.
+- CloudFront is the edge provider at launch.
+- Aurora Serverless v2 auto-scales; no HA trigger needed (multi-AZ by default).
+- Staging shares the AWS account with separate databases, Lambda functions, queues, secrets, and IAM roles.
 - Beta and GA dates depend on the mobile hire starting in January 2027 and the QA hire starting in February 2027.
 - Pilot schools must provide data samples and named operational contacts.
 - Legal and penetration-test budgets are separate from the monthly cloud budget.

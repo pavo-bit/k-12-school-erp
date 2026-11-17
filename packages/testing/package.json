@@ -11,10 +11,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@school-erp/core": "workspace:*"
+    "@school-erp/core": "workspace:*",
+    "@school-erp/db": "workspace:*",
+    "drizzle-orm": "^0.36.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.0"
   }
 }

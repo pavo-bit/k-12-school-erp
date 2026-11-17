@@ -1,4 +1,20 @@
-import { db, fee_heads, fee_structures, fee_structure_lines, fee_assignments, concessions, invoices, invoice_lines, payments, payment_allocations, receipts, credit_notes, refunds, gateway_orders, gateway_events } from "@school-erp/db";
+﻿import {
+  db,
+  feeHeads,
+  feeStructures,
+  feeStructureLines,
+  feeAssignments,
+  concessions,
+  invoices,
+  invoiceLines,
+  payments,
+  paymentAllocations,
+  receipts,
+  creditNotes,
+  refunds,
+  gatewayOrders,
+  gatewayEvents,
+} from "@school-erp/db";
 import { eq, and, desc, sql, gte, lte, sum, isNull } from "drizzle-orm";
 import { writeAudit } from "@school-erp/db";
 import { randomUUID } from "node:crypto";
@@ -15,7 +31,7 @@ export interface CreateFeeHeadInput {
 
 export async function createFeeHead(input: CreateFeeHeadInput) {
   const id = randomUUID();
-  await db.insert(fee_heads).values({
+  await db.insert(feeHeads).values({
     id,
     schoolId: input.schoolId,
     name: input.name,
@@ -38,12 +54,16 @@ export async function createFeeHead(input: CreateFeeHeadInput) {
 }
 
 export async function getFeeHead(id: string) {
-  const rows = await db.select().from(fee_heads).where(eq(fee_heads.id, id)).limit(1);
+  const rows = await db.select().from(feeHeads).where(eq(feeHeads.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function listFeeHeads(schoolId: string) {
-  return db.select().from(fee_heads).where(eq(fee_heads.schoolId, schoolId)).orderBy(desc(fee_heads.createdAt));
+  return db
+    .select()
+    .from(feeHeads)
+    .where(eq(feeHeads.schoolId, schoolId))
+    .orderBy(desc(feeHeads.createdAt));
 }
 
 // Fee Structure operations
@@ -53,7 +73,12 @@ export interface CreateFeeStructureInput {
   classId: string;
   name: string;
   status: string;
-  feeStructureLines: Array<{ feeHeadId: string; amountPaise: number; frequency: string; dueRule: string }>;
+  feeStructureLines: Array<{
+    feeHeadId: string;
+    amountPaise: number;
+    frequency: string;
+    dueRule: string;
+  }>;
   actorId: string;
 }
 
@@ -61,7 +86,7 @@ export async function createFeeStructure(input: CreateFeeStructureInput) {
   const id = randomUUID();
 
   // Insert fee structure
-  await db.insert(fee_structures).values({
+  await db.insert(feeStructures).values({
     id,
     schoolId: input.schoolId,
     academicYearId: input.academicYearId,
@@ -72,7 +97,7 @@ export async function createFeeStructure(input: CreateFeeStructureInput) {
 
   // Insert fee structure lines
   for (const line of input.feeStructureLines) {
-    await db.insert(fee_structure_lines).values({
+    await db.insert(feeStructureLines).values({
       id: randomUUID(),
       schoolId: input.schoolId,
       feeStructureId: id,
@@ -97,25 +122,27 @@ export async function createFeeStructure(input: CreateFeeStructureInput) {
 }
 
 export async function getFeeStructure(id: string) {
-  const structure = await db.select().from(fee_structures).where(eq(fee_structures.id, id)).limit(1);
+  const structure = await db.select().from(feeStructures).where(eq(feeStructures.id, id)).limit(1);
   const structureData = structure[0];
 
   if (!structureData) return null;
 
   const lines = await db
     .select()
-    .from(fee_structure_lines)
-    .where(eq(fee_structure_lines.feeStructureId, id));
+    .from(feeStructureLines)
+    .where(eq(feeStructureLines.feeStructureId, id));
 
   return { ...structureData, feeStructureLines: lines };
 }
 
 export async function listFeeStructures(schoolId: string, academicYearId?: string) {
-  const query = db.select().from(fee_structures).where(eq(fee_structures.schoolId, schoolId));
-  if (academicYearId) {
-    query.where(eq(fee_structures.academicYearId, academicYearId));
-  }
-  return query.orderBy(desc(fee_structures.createdAt));
+  const conditions = [eq(feeStructures.schoolId, schoolId)];
+  if (academicYearId) conditions.push(eq(feeStructures.academicYearId, academicYearId));
+  return db
+    .select()
+    .from(feeStructures)
+    .where(and(...conditions))
+    .orderBy(desc(feeStructures.createdAt));
 }
 
 // Fee Assignment operations
@@ -124,13 +151,13 @@ export interface CreateFeeAssignmentInput {
   studentId: string;
   feeStructureId: string;
   academicYearId: string;
-  effectiveFrom: Date;
+  effectiveFrom: string;
   actorId: string;
 }
 
 export async function createFeeAssignment(input: CreateFeeAssignmentInput) {
   const id = randomUUID();
-  await db.insert(fee_assignments).values({
+  await db.insert(feeAssignments).values({
     id,
     schoolId: input.schoolId,
     studentId: input.studentId,
@@ -167,18 +194,21 @@ export interface CreateConcessionInput {
 
 export async function createConcession(input: CreateConcessionInput) {
   const id = randomUUID();
-  await db.insert(concessions).values({
-    id,
-    schoolId: input.schoolId,
-    studentId: input.studentId,
-    feeHeadId: input.feeHeadId,
-    type: input.type,
-    value: input.value,
-    reason: input.reason,
-    approvedBy: input.approvedBy,
-    validFrom: input.validFrom,
-    validTo: input.validTo ?? null,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (db as any).insert(concessions).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      studentId: input.studentId,
+      feeHeadId: input.feeHeadId,
+      type: input.type,
+      value: input.value,
+      reason: input.reason,
+      approvedBy: input.approvedBy,
+      validFrom: input.validFrom,
+      validTo: input.validTo ?? null,
+    },
+  ]);
 
   await writeAudit({
     scope: "school",
@@ -190,7 +220,13 @@ export async function createConcession(input: CreateConcessionInput) {
     after: { studentId: input.studentId, feeHeadId: input.feeHeadId, value: input.value },
   });
 
-  return { id, studentId: input.studentId, feeHeadId: input.feeHeadId, type: input.type, value: input.value };
+  return {
+    id,
+    studentId: input.studentId,
+    feeHeadId: input.feeHeadId,
+    type: input.type,
+    value: input.value,
+  };
 }
 
 // Invoice operations
@@ -203,7 +239,12 @@ export interface CreateInvoiceInput {
   issueDate: Date;
   dueDate: Date;
   status: string;
-  invoiceLines: Array<{ feeHeadId: string; amountPaise: number; concessionPaise: number; netPaise: number }>;
+  invoiceLines: Array<{
+    feeHeadId: string;
+    amountPaise: number;
+    concessionPaise: number;
+    netPaise: number;
+  }>;
   actorId: string;
 }
 
@@ -212,23 +253,27 @@ export async function createInvoice(input: CreateInvoiceInput) {
   const totalPaise = input.invoiceLines.reduce((sum, line) => sum + line.netPaise, 0);
 
   // Insert invoice
-  await db.insert(invoices).values({
-    id,
-    schoolId: input.schoolId,
-    studentId: input.studentId,
-    academicYearId: input.academicYearId,
-    financialYear: input.financialYear,
-    invoiceNumber: input.invoiceNumber,
-    issueDate: input.issueDate,
-    dueDate: input.dueDate,
-    totalPaise,
-    paidPaise: 0,
-    status: input.status,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (db as any).insert(invoices).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      studentId: input.studentId,
+      academicYearId: input.academicYearId,
+      financialYear: input.financialYear,
+      invoiceNumber: input.invoiceNumber,
+      issueDate: input.issueDate,
+      dueDate: input.dueDate,
+      totalPaise,
+      paidPaise: 0,
+      status: input.status,
+      version: 1,
+    },
+  ]);
 
   // Insert invoice lines
   for (const line of input.invoiceLines) {
-    await db.insert(invoice_lines).values({
+    await db.insert(invoiceLines).values({
       id: randomUUID(),
       schoolId: input.schoolId,
       invoiceId: id,
@@ -256,23 +301,20 @@ export async function getInvoice(id: string) {
   const invoice = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
   if (!invoice[0]) return null;
 
-  const lines = await db
-    .select()
-    .from(invoice_lines)
-    .where(eq(invoice_lines.invoiceId, id));
+  const lines = await db.select().from(invoiceLines).where(eq(invoiceLines.invoiceId, id));
 
   return { ...invoice[0], invoiceLines: lines };
 }
 
 export async function listInvoices(schoolId: string, studentId?: string, status?: string) {
-  const query = db.select().from(invoices).where(eq(invoices.schoolId, schoolId));
-  if (studentId) {
-    query.where(eq(invoices.studentId, studentId));
-  }
-  if (status) {
-    query.where(eq(invoices.status, status));
-  }
-  return query.orderBy(desc(invoices.createdAt));
+  const conditions = [eq(invoices.schoolId, schoolId)];
+  if (studentId) conditions.push(eq(invoices.studentId, studentId));
+  if (status) conditions.push(eq(invoices.status, status));
+  return db
+    .select()
+    .from(invoices)
+    .where(and(...conditions))
+    .orderBy(desc(invoices.createdAt));
 }
 
 export async function updateInvoiceStatus(id: string, status: string, actorId: string) {
@@ -346,15 +388,18 @@ export async function getPayment(id: string) {
 }
 
 export async function listPayments(schoolId: string, studentId?: string) {
-  const query = db.select().from(payments).where(eq(payments.schoolId, schoolId));
-  if (studentId) {
-    query.where(eq(payments.studentId, studentId));
-  }
-  return query.orderBy(desc(payments.receivedAt));
+  const conditions = [eq(payments.schoolId, schoolId)];
+  if (studentId) conditions.push(eq(payments.studentId, studentId));
+  return db
+    .select()
+    .from(payments)
+    .where(and(...conditions))
+    .orderBy(desc(payments.receivedAt));
 }
 
 // Payment Allocation operations
 export interface PaymentAllocationInput {
+  schoolId: string;
   paymentId: string;
   invoiceId: string;
   amountPaise: number;
@@ -362,13 +407,15 @@ export interface PaymentAllocationInput {
 
 export async function createPaymentAllocation(input: PaymentAllocationInput) {
   const id = randomUUID();
-  await db.insert(payment_allocations).values({
-    id,
-    schoolId: null, // Will be set from payment
-    paymentId: input.paymentId,
-    invoiceId: input.invoiceId,
-    amountPaise: input.amountPaise,
-  });
+  await db.insert(paymentAllocations).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      paymentId: input.paymentId,
+      invoiceId: input.invoiceId,
+      amountPaise: input.amountPaise,
+    },
+  ]);
 
   return { id, paymentId: input.paymentId, invoiceId: input.invoiceId };
 }
@@ -421,7 +468,7 @@ export interface CreateCreditNoteInput {
 export async function createCreditNote(input: CreateCreditNoteInput) {
   const id = randomUUID();
 
-  await db.insert(credit_notes).values({
+  await db.insert(creditNotes).values({
     id,
     schoolId: input.schoolId,
     studentId: input.studentId,
@@ -445,6 +492,7 @@ export async function createCreditNote(input: CreateCreditNoteInput) {
 
 // Refund operations
 export interface CreateRefundInput {
+  schoolId: string;
   paymentId: string;
   amountPaise: number;
   status: string;
@@ -457,17 +505,17 @@ export async function createRefund(input: CreateRefundInput) {
   const id = randomUUID();
   await db.insert(refunds).values({
     id,
-    schoolId: null, // Will be set from payment
+    schoolId: input.schoolId,
     paymentId: input.paymentId,
     amountPaise: input.amountPaise,
     status: input.status,
     approvedBy: input.approvedBy,
-    gatewayRefundId: input.gatewayRefundId ?? null,
+    gatewayRefundId: input.gatewayRefundId,
   });
 
   await writeAudit({
     scope: "school",
-    schoolId: null, // Will be set from payment
+    schoolId: input.schoolId,
     actorId: input.actorId,
     action: "refund.created",
     entityType: "refund",

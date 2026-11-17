@@ -55,7 +55,7 @@ export function hasValidTenantContext(request: NextRequest): boolean {
  * Creates a standardized API response with tenant context
  */
 export function createTenantAwareResponse(
-  data: any,
+  data: unknown,
   request: NextRequest,
   status: number = 200,
 ): NextResponse {
@@ -105,7 +105,8 @@ export async function withTenantContext<T extends Record<string, unknown>>(
       {
         error: {
           code: "FORBIDDEN",
-          message: "Direct access to this endpoint is not allowed. Please use the configured domain.",
+          message:
+            "Direct access to this endpoint is not allowed. Please use the configured domain.",
         },
       },
       { status: 403 },

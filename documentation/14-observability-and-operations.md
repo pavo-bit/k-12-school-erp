@@ -1,8 +1,8 @@
-# Observability and Operations
+﻿# Observability and Operations
 
 **Status:** Baseline  
 **Owner:** Engineering / Operations  
-**Related:** [06-gcp-infrastructure.md](06-gcp-infrastructure.md), [11-security-and-compliance.md](11-security-and-compliance.md), [13-cicd-and-release-management.md](13-cicd-and-release-management.md), [15-cost-model.md](15-cost-model.md)
+**Related:** [06-aws-infrastructure.md](06-aws-infrastructure.md), [11-security-and-compliance.md](11-security-and-compliance.md), [13-cicd-and-release-management.md](13-cicd-and-release-management.md), [15-cost-model.md](15-cost-model.md)
 
 ---
 
@@ -356,7 +356,7 @@ At 10 schools, evaluate HA, read replicas, and dedicated staging database.
 
 ## 17. Related Documents
 
-- [06-gcp-infrastructure.md](06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](06-aws-infrastructure.md)
 - [11-security-and-compliance.md](11-security-and-compliance.md)
 - [13-cicd-and-release-management.md](13-cicd-and-release-management.md)
 - [15-cost-model.md](15-cost-model.md)

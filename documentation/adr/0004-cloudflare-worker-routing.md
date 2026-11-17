@@ -1,9 +1,9 @@
-# ADR-0004: Cloudflare Worker Routing with Origin Secret
+﻿# ADR-0004: Cloudflare Worker Routing with Origin Secret
 
 - **Status:** Accepted
 - **Date:** 14 November 2026
 - **Owner:** Founder 1
-- **Related:** [../06-gcp-infrastructure.md](../06-gcp-infrastructure.md), [../11-security-and-compliance.md](../11-security-and-compliance.md)
+- **Related:** [../06-aws-infrastructure.md](../06-aws-infrastructure.md), [../11-security-and-compliance.md](../11-security-and-compliance.md)
 
 ---
 
@@ -63,5 +63,5 @@ The application rejects any request without the correct secret, using a constant
 
 ## References
 
-- [06-gcp-infrastructure.md](../06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](../06-aws-infrastructure.md)
 - [11-security-and-compliance.md](../11-security-and-compliance.md)

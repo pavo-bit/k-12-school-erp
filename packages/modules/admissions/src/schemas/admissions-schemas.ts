@@ -7,7 +7,9 @@ export const CreateEnquirySchema = z.object({
   guardianPhone: z.string().min(10).max(15),
   classSought: z.string().min(1).max(50),
   source: z.enum(["website", "walk_in", "referral", "advertisement", "other"]).default("other"),
-  status: z.enum(["new", "contacted", "scheduled", "converted", "rejected", "closed"]).default("new"),
+  status: z
+    .enum(["new", "contacted", "scheduled", "converted", "rejected", "closed"])
+    .default("new"),
   actorId: z.string(),
 });
 
@@ -37,12 +39,34 @@ export const CreateApplicationSchema = z.object({
   schoolId: z.string().uuid(),
   enquiryId: z.string().uuid(),
   academicYearId: z.string().uuid(),
-  status: z.enum(["draft", "submitted", "review", "interview", "selected", "rejected", "converted", "withdrawn"]).default("draft"),
+  status: z
+    .enum([
+      "draft",
+      "submitted",
+      "review",
+      "interview",
+      "selected",
+      "rejected",
+      "converted",
+      "withdrawn",
+    ])
+    .default("draft"),
   actorId: z.string(),
 });
 
 export const UpdateApplicationSchema = z.object({
-  status: z.enum(["draft", "submitted", "review", "interview", "selected", "rejected", "converted", "withdrawn"]).optional(),
+  status: z
+    .enum([
+      "draft",
+      "submitted",
+      "review",
+      "interview",
+      "selected",
+      "rejected",
+      "converted",
+      "withdrawn",
+    ])
+    .optional(),
   notes: z.string().max(1000).optional(),
 });
 

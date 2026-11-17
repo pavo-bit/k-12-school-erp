@@ -13,6 +13,7 @@
   "dependencies": {
     "@school-erp/core": "workspace:*",
     "@school-erp/db": "workspace:*",
+    "drizzle-orm": "^0.36.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

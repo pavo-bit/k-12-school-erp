@@ -1,4 +1,11 @@
-import { db, organizations, schools, academic_years, invitations, school_settings } from "@school-erp/db";
+﻿import {
+  db,
+  organizations,
+  schools,
+  academicYears,
+  invitations,
+  schoolSettings,
+} from "@school-erp/db";
 import { eq, and, desc } from "drizzle-orm";
 import { writeAudit } from "@school-erp/db";
 import { randomUUID } from "node:crypto";
@@ -39,13 +46,17 @@ export async function listOrganizations() {
   return db.select().from(organizations);
 }
 
-export async function updateOrganization(id: string, input: { name?: string; billingEmail?: string; status?: string }, actorId: string) {
+export async function updateOrganization(
+  id: string,
+  input: { name?: string; billingEmail?: string; status?: string },
+  actorId: string,
+) {
   const existing = await getOrganization(id);
   if (!existing) {
     throw new Error("Organization not found");
   }
 
-  const updates: any = {};
+  const updates: Record<string, unknown> = {};
   if (input.name !== undefined) updates.name = input.name;
   if (input.billingEmail !== undefined) updates.billingEmail = input.billingEmail;
   if (input.status !== undefined) updates.status = input.status;
@@ -119,13 +130,13 @@ export async function getSchoolBySlug(slug: string) {
   return rows[0] ?? null;
 }
 
-export async function updateSchool(id: string, input: any, actorId: string) {
+export async function updateSchool(id: string, input: Record<string, unknown>, actorId: string) {
   const existing = await getSchool(id);
   if (!existing) {
     throw new Error("School not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.name !== undefined) updates.name = input.name;
   if (input.slug !== undefined) updates.slug = input.slug;
   if (input.board !== undefined) updates.board = input.board;
@@ -162,7 +173,7 @@ export async function createAcademicYear(input: CreateAcademicYearInput) {
   const id = randomUUID();
   const status = input.status ?? "draft";
 
-  await db.insert(academic_years).values({
+  await db.insert(academicYears).values({
     id,
     schoolId: input.schoolId,
     name: input.name,
@@ -185,37 +196,45 @@ export async function createAcademicYear(input: CreateAcademicYearInput) {
 }
 
 export async function getAcademicYear(id: string) {
-  const rows = await db.select().from(academic_years).where(eq(academic_years.id, id)).limit(1);
+  const rows = await db.select().from(academicYears).where(eq(academicYears.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function getActiveAcademicYear(schoolId: string) {
   const rows = await db
     .select()
-    .from(academic_years)
-    .where(eq(academic_years.schoolId, schoolId))
-    .orderBy(desc(academic_years.createdAt))
+    .from(academicYears)
+    .where(eq(academicYears.schoolId, schoolId))
+    .orderBy(desc(academicYears.createdAt))
     .limit(1);
   return rows[0] ?? null;
 }
 
 export async function listAcademicYears(schoolId: string) {
-  return db.select().from(academic_years).where(eq(academic_years.schoolId, schoolId)).orderBy(desc(academic_years.createdAt));
+  return db
+    .select()
+    .from(academicYears)
+    .where(eq(academicYears.schoolId, schoolId))
+    .orderBy(desc(academicYears.createdAt));
 }
 
-export async function updateAcademicYear(id: string, input: any, actorId: string) {
+export async function updateAcademicYear(
+  id: string,
+  input: Record<string, unknown>,
+  actorId: string,
+) {
   const existing = await getAcademicYear(id);
   if (!existing) {
     throw new Error("Academic year not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.name !== undefined) updates.name = input.name;
   if (input.startDate !== undefined) updates.startDate = input.startDate;
   if (input.endDate !== undefined) updates.endDate = input.endDate;
   if (input.status !== undefined) updates.status = input.status;
 
-  await db.update(academic_years).set(updates).where(eq(academic_years.id, id));
+  await db.update(academicYears).set(updates).where(eq(academicYears.id, id));
   await writeAudit({
     scope: "platform",
     schoolId: existing.schoolId,
@@ -266,7 +285,11 @@ export async function inviteStaff(input: InviteStaffInput) {
 }
 
 export async function listInvitations(schoolId: string) {
-  return db.select().from(invitations).where(eq(invitations.schoolId, schoolId)).orderBy(desc(invitations.createdAt));
+  return db
+    .select()
+    .from(invitations)
+    .where(eq(invitations.schoolId, schoolId))
+    .orderBy(desc(invitations.createdAt));
 }
 
 export async function acceptInvitation(token: string, actorId: string) {
@@ -282,13 +305,16 @@ export async function acceptInvitation(token: string, actorId: string) {
     throw new Error("Invitation has expired");
   }
 
-  if (invitation.status === "accepted") {
+  if (invitation.acceptedAt) {
     throw new Error("Invitation already accepted");
   }
 
   // Here you would integrate with Better Auth to create the user account
   // This is a placeholder for the actual implementation
-  await db.update(invitations).set({ status: "accepted", acceptedAt: new Date() }).where(eq(invitations.id, invitation.id));
+  await db
+    .update(invitations)
+    .set({ acceptedAt: new Date() })
+    .where(eq(invitations.id, invitation.id));
 
   await writeAudit({
     scope: "school",
@@ -300,20 +326,37 @@ export async function acceptInvitation(token: string, actorId: string) {
     after: { status: "accepted" },
   });
 
-  return { id: invitation.id, email: invitation.email, roleId: invitation.roleId, acceptedAt: new Date() };
+  return {
+    id: invitation.id,
+    email: invitation.email,
+    roleId: invitation.roleId,
+    acceptedAt: new Date(),
+  };
 }
 
 // School Settings operations
 export async function getSchoolSetting(schoolId: string, key: string) {
-  const rows = await db.select().from(school_settings).where(eq(school_settings.schoolId, schoolId), eq(school_settings.key, key)).limit(1);
+  const rows = await db
+    .select()
+    .from(schoolSettings)
+    .where(and(eq(schoolSettings.schoolId, schoolId), eq(schoolSettings.key, key)))
+    .limit(1);
   return rows[0] ?? null;
 }
 
-export async function setSchoolSetting(schoolId: string, key: string, value: any, actorId: string) {
+export async function setSchoolSetting(
+  schoolId: string,
+  key: string,
+  value: string,
+  actorId: string,
+) {
   const existing = await getSchoolSetting(schoolId, key);
 
   if (existing) {
-    await db.update(school_settings).set({ value, updatedAt: new Date() }).where(eq(school_settings.id, existing.id));
+    await db
+      .update(schoolSettings)
+      .set({ value, updatedAt: new Date() })
+      .where(eq(schoolSettings.id, existing.id));
     await writeAudit({
       scope: "school",
       schoolId,
@@ -326,7 +369,7 @@ export async function setSchoolSetting(schoolId: string, key: string, value: any
     });
   } else {
     const id = randomUUID();
-    await db.insert(school_settings).values({ id, schoolId, key, value });
+    await db.insert(schoolSettings).values({ id, schoolId, key, value });
     await writeAudit({
       scope: "school",
       schoolId,
@@ -342,7 +385,7 @@ export async function setSchoolSetting(schoolId: string, key: string, value: any
 }
 
 export async function listSchoolSettings(schoolId: string) {
-  return db.select().from(school_settings).where(eq(school_settings.schoolId, schoolId));
+  return db.select().from(schoolSettings).where(eq(schoolSettings.schoolId, schoolId));
 }
 
 export async function deleteSchoolSetting(schoolId: string, key: string, actorId: string) {
@@ -351,7 +394,7 @@ export async function deleteSchoolSetting(schoolId: string, key: string, actorId
     throw new Error("Setting not found");
   }
 
-  await db.delete(school_settings).where(eq(school_settings.id, existing.id));
+  await db.delete(schoolSettings).where(eq(schoolSettings.id, existing.id));
   await writeAudit({
     scope: "school",
     schoolId,

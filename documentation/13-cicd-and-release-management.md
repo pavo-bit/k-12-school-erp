@@ -1,8 +1,8 @@
-# CI/CD and Release Management
+﻿# CI/CD and Release Management
 
 **Status:** Baseline  
 **Owner:** Engineering  
-**Related:** [06-gcp-infrastructure.md](06-gcp-infrastructure.md), [10-mobile-application.md](10-mobile-application.md), [12-testing-and-quality.md](12-testing-and-quality.md), [14-observability-and-operations.md](14-observability-and-operations.md)
+**Related:** [06-aws-infrastructure.md](06-aws-infrastructure.md), [10-mobile-application.md](10-mobile-application.md), [12-testing-and-quality.md](12-testing-and-quality.md), [14-observability-and-operations.md](14-observability-and-operations.md)
 
 ---
 
@@ -265,7 +265,7 @@ Emergency security fixes are exempt with incident commander approval.
 
 ## 16. Related Documents
 
-- [06-gcp-infrastructure.md](06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](06-aws-infrastructure.md)
 - [10-mobile-application.md](10-mobile-application.md)
 - [12-testing-and-quality.md](12-testing-and-quality.md)
 - [14-observability-and-operations.md](14-observability-and-operations.md)

@@ -1,16 +1,16 @@
-import {
+﻿import {
   db,
-  notification_templates,
-  template_versions,
-  template_approvals,
+  notificationTemplates,
+  templateVersions,
+  templateApprovals,
   announcements,
-  announcement_audiences,
+  announcementAudiences,
   notifications,
-  notification_deliveries,
-  notification_preferences,
-  opt_outs,
-  provider_configs,
-  message_costs,
+  notificationDeliveries,
+  notificationPreferences,
+  optOuts,
+  providerConfigs,
+  messageCosts,
 } from "@school-erp/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
 import { writeAudit } from "@school-erp/db";
@@ -30,13 +30,12 @@ export interface CreateNotificationTemplateInput {
 
 export async function createNotificationTemplate(input: CreateNotificationTemplateInput) {
   const id = randomUUID();
-  await db.insert(notification_templates).values({
+  await db.insert(notificationTemplates).values({
     id,
     schoolId: input.schoolId,
     key: input.key,
     channel: input.channel,
     language: input.language ?? "en",
-    subject: input.subject ?? null,
     body: input.body,
     status: input.status ?? "draft",
   });
@@ -55,30 +54,40 @@ export async function createNotificationTemplate(input: CreateNotificationTempla
 }
 
 export async function getNotificationTemplate(id: string) {
-  const rows = await db.select().from(notification_templates).where(eq(notification_templates.id, id)).limit(1);
+  const rows = await db
+    .select()
+    .from(notificationTemplates)
+    .where(eq(notificationTemplates.id, id))
+    .limit(1);
   return rows[0] ?? null;
 }
 
 export async function listNotificationTemplates(schoolId: string, channel?: string) {
-  const query = db.select().from(notification_templates).where(eq(notification_templates.schoolId, schoolId));
-  if (channel) {
-    query.where(eq(notification_templates.channel, channel));
-  }
-  return query.orderBy(desc(notification_templates.createdAt));
+  const conditions = [eq(notificationTemplates.schoolId, schoolId)];
+  if (channel) conditions.push(eq(notificationTemplates.channel, channel));
+  return db
+    .select()
+    .from(notificationTemplates)
+    .where(and(...conditions))
+    .orderBy(desc(notificationTemplates.createdAt));
 }
 
-export async function updateNotificationTemplate(id: string, input: any, actorId: string) {
+export async function updateNotificationTemplate(
+  id: string,
+  input: Record<string, unknown>,
+  actorId: string,
+) {
   const existing = await getNotificationTemplate(id);
   if (!existing) {
     throw new Error("Notification template not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
-  if (input.subject !== undefined) updates.subject = input.subject;
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
+  // subject not stored in notification_templates schema
   if (input.body !== undefined) updates.body = input.body;
   if (input.status !== undefined) updates.status = input.status;
 
-  await db.update(notification_templates).set(updates).where(eq(notification_templates.id, id));
+  await db.update(notificationTemplates).set(updates).where(eq(notificationTemplates.id, id));
   await writeAudit({
     scope: "school",
     schoolId: existing.schoolId,
@@ -98,18 +107,18 @@ export interface CreateTemplateVersionInput {
   templateId: string;
   version: number;
   body: string;
-  variables?: any[];
+  variables?: unknown[];
   actorId: string;
 }
 
 export async function createTemplateVersion(input: CreateTemplateVersionInput) {
   const id = randomUUID();
-  await db.insert(template_versions).values({
+  await db.insert(templateVersions).values({
     id,
     templateId: input.templateId,
     version: input.version,
     body: input.body,
-    variables: input.variables ?? null,
+    variables: input.variables ? JSON.stringify(input.variables) : null,
   });
 
   return { id, templateId: input.templateId, version: input.version };
@@ -149,10 +158,19 @@ export async function createAnnouncement(input: CreateAnnouncementInput) {
     action: "announcement.created",
     entityType: "announcement",
     entityId: id,
-    after: { title: input.title, audience: input.audience ?? "all", status: input.status ?? "draft" },
+    after: {
+      title: input.title,
+      audience: input.audience ?? "all",
+      status: input.status ?? "draft",
+    },
   });
 
-  return { id, title: input.title, audience: input.audience ?? "all", status: input.status ?? "draft" };
+  return {
+    id,
+    title: input.title,
+    audience: input.audience ?? "all",
+    status: input.status ?? "draft",
+  };
 }
 
 export async function getAnnouncement(id: string) {
@@ -161,20 +179,26 @@ export async function getAnnouncement(id: string) {
 }
 
 export async function listAnnouncements(schoolId: string, status?: string) {
-  const query = db.select().from(announcements).where(eq(announcements.schoolId, schoolId));
-  if (status) {
-    query.where(eq(announcements.status, status));
-  }
-  return query.orderBy(desc(announcements.createdAt));
+  const conditions = [eq(announcements.schoolId, schoolId)];
+  if (status) conditions.push(eq(announcements.status, status));
+  return db
+    .select()
+    .from(announcements)
+    .where(and(...conditions))
+    .orderBy(desc(announcements.createdAt));
 }
 
-export async function updateAnnouncement(id: string, input: any, actorId: string) {
+export async function updateAnnouncement(
+  id: string,
+  input: Record<string, unknown>,
+  actorId: string,
+) {
   const existing = await getAnnouncement(id);
   if (!existing) {
     throw new Error("Announcement not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.title !== undefined) updates.title = input.title;
   if (input.body !== undefined) updates.body = input.body;
   if (input.status !== undefined) updates.status = input.status;
@@ -226,10 +250,19 @@ export async function createNotification(input: CreateNotificationInput) {
     action: "notification.created",
     entityType: "notification",
     entityId: id,
-    after: { recipientId: input.recipientId, channel: input.channel, status: input.status ?? "pending" },
+    after: {
+      recipientId: input.recipientId,
+      channel: input.channel,
+      status: input.status ?? "pending",
+    },
   });
 
-  return { id, recipientId: input.recipientId, channel: input.channel, status: input.status ?? "pending" };
+  return {
+    id,
+    recipientId: input.recipientId,
+    channel: input.channel,
+    status: input.status ?? "pending",
+  };
 }
 
 export async function getNotification(id: string) {
@@ -238,14 +271,14 @@ export async function getNotification(id: string) {
 }
 
 export async function listNotifications(schoolId: string, recipientId?: string, status?: string) {
-  const query = db.select().from(notifications).where(eq(notifications.schoolId, schoolId));
-  if (recipientId) {
-    query.where(eq(notifications.recipientId, recipientId));
-  }
-  if (status) {
-    query.where(eq(notifications.status, status));
-  }
-  return query.orderBy(desc(notifications.createdAt));
+  const conditions = [eq(notifications.schoolId, schoolId)];
+  if (recipientId) conditions.push(eq(notifications.recipientId, recipientId));
+  if (status) conditions.push(eq(notifications.status, status));
+  return db
+    .select()
+    .from(notifications)
+    .where(and(...conditions))
+    .orderBy(desc(notifications.createdAt));
 }
 
 // Notification Delivery operations
@@ -264,7 +297,7 @@ export async function createNotificationDelivery(input: CreateNotificationDelive
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(notification_deliveries).values({
+  await db.insert(notificationDeliveries).values({
     id,
     notificationId: input.notificationId,
     provider: input.provider,
@@ -272,23 +305,34 @@ export async function createNotificationDelivery(input: CreateNotificationDelive
     status: input.status ?? "pending",
     attempt: input.attempt ?? 1,
     error: input.error ?? null,
-    deliveredAt: input.deliveredAt ?? null,
   });
 
-  return { id, notificationId: input.notificationId, provider: input.provider, status: input.status ?? "pending" };
+  return {
+    id,
+    notificationId: input.notificationId,
+    provider: input.provider,
+    status: input.status ?? "pending",
+  };
 }
 
 export async function getNotificationDelivery(id: string) {
-  const rows = await db.select().from(notification_deliveries).where(eq(notification_deliveries.id, id)).limit(1);
+  const rows = await db
+    .select()
+    .from(notificationDeliveries)
+    .where(eq(notificationDeliveries.id, id))
+    .limit(1);
   return rows[0] ?? null;
 }
 
-export async function listNotificationDeliveries(schoolId: string, notificationId?: string) {
-  const query = db.select().from(notification_deliveries).where(eq(notification_deliveries.schoolId, schoolId));
+export async function listNotificationDeliveries(_schoolId: string, notificationId?: string) {
   if (notificationId) {
-    query.where(eq(notification_deliveries.notificationId, notificationId));
+    return db
+      .select()
+      .from(notificationDeliveries)
+      .where(eq(notificationDeliveries.notificationId, notificationId))
+      .orderBy(desc(notificationDeliveries.createdAt));
   }
-  return query.orderBy(desc(notification_deliveries.createdAt));
+  return db.select().from(notificationDeliveries).orderBy(desc(notificationDeliveries.createdAt));
 }
 
 // Notification Preference operations
@@ -305,33 +349,54 @@ export async function createNotificationPreference(input: CreateNotificationPref
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(notification_preferences).values({
+  await db.insert(notificationPreferences).values({
     id,
-    schoolId: input.schoolId,
-    guardianId: input.guardianId,
+    userId: input.guardianId,
     channel: input.channel,
     category: input.category,
     status: input.status ?? "subscribed",
   });
 
-  return { id, guardianId: input.guardianId, channel: input.channel, category: input.category, status: input.status ?? "subscribed" };
+  return {
+    id,
+    guardianId: input.guardianId,
+    channel: input.channel,
+    category: input.category,
+    status: input.status ?? "subscribed",
+  };
 }
 
-export async function getNotificationPreference(schoolId: string, guardianId: string, channel: string, category: string) {
+export async function getNotificationPreference(
+  _schoolId: string,
+  guardianId: string,
+  channel: string,
+  category: string,
+) {
   const rows = await db
     .select()
-    .from(notification_preferences)
-    .where(eq(notification_preferences.schoolId, schoolId), eq(notification_preferences.guardianId, guardianId), eq(notification_preferences.channel, channel), eq(notification_preferences.category, category))
+    .from(notificationPreferences)
+    .where(
+      and(
+        eq(notificationPreferences.userId, guardianId),
+        eq(notificationPreferences.channel, channel),
+        eq(notificationPreferences.category, category),
+      ),
+    )
     .limit(1);
   return rows[0] ?? null;
 }
 
-export async function listNotificationPreferences(schoolId: string, guardianId?: string) {
-  const query = db.select().from(notification_preferences).where(eq(notification_preferences.schoolId, schoolId));
-  if (guardianId) {
-    query.where(eq(notification_preferences.guardianId, guardianId));
+export async function listNotificationPreferences(_schoolId: string, guardianId?: string) {
+  const conditions = [];
+  if (guardianId) conditions.push(eq(notificationPreferences.userId, guardianId));
+  if (conditions.length > 0) {
+    return db
+      .select()
+      .from(notificationPreferences)
+      .where(and(...conditions))
+      .orderBy(notificationPreferences.category);
   }
-  return query.orderBy(notification_preferences.category);
+  return db.select().from(notificationPreferences).orderBy(notificationPreferences.category);
 }
 
 // Opt-out operations
@@ -347,12 +412,11 @@ export async function createOptOut(input: CreateOptOutInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(opt_outs).values({
+  await db.insert(optOuts).values({
     id,
-    schoolId: input.schoolId,
-    recipientId: input.recipientId,
+    userId: input.recipientId,
     channel: input.channel,
-    reason: input.reason ?? null,
+    category: input.reason ?? "all",
   });
 
   await writeAudit({
@@ -368,19 +432,24 @@ export async function createOptOut(input: CreateOptOutInput) {
   return { id, recipientId: input.recipientId, channel: input.channel };
 }
 
-export async function listOptOuts(schoolId: string, recipientId?: string) {
-  const query = db.select().from(opt_outs).where(eq(opt_outs.schoolId, schoolId));
-  if (recipientId) {
-    query.where(eq(opt_outs.recipientId, recipientId));
+export async function listOptOuts(_schoolId: string, recipientId?: string) {
+  const conditions = [];
+  if (recipientId) conditions.push(eq(optOuts.userId, recipientId));
+  if (conditions.length > 0) {
+    return db
+      .select()
+      .from(optOuts)
+      .where(and(...conditions))
+      .orderBy(desc(optOuts.createdAt));
   }
-  return query.orderBy(desc(opt_outs.createdAt));
+  return db.select().from(optOuts).orderBy(desc(optOuts.createdAt));
 }
 
 // Provider Config operations
 export interface CreateProviderConfigInput {
   schoolId?: string;
   provider: string;
-  config: any;
+  config: string;
   actorId: string;
 }
 
@@ -388,11 +457,11 @@ export async function createProviderConfig(input: CreateProviderConfigInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(provider_configs).values({
+  await db.insert(providerConfigs).values({
     id,
     schoolId: input.schoolId ?? null,
     provider: input.provider,
-    config: input.config,
+    config: JSON.stringify(input.config),
   });
 
   return { id, provider: input.provider };
@@ -401,14 +470,14 @@ export async function createProviderConfig(input: CreateProviderConfigInput) {
 export async function getProviderConfig(schoolId: string, provider: string) {
   const rows = await db
     .select()
-    .from(provider_configs)
-    .where(eq(provider_configs.schoolId, schoolId), eq(provider_configs.provider, provider))
+    .from(providerConfigs)
+    .where(and(eq(providerConfigs.schoolId, schoolId), eq(providerConfigs.provider, provider)))
     .limit(1);
   return rows[0] ?? null;
 }
 
 export async function listProviderConfigs(schoolId: string) {
-  return db.select().from(provider_configs).where(eq(provider_configs.schoolId, schoolId));
+  return db.select().from(providerConfigs).where(eq(providerConfigs.schoolId, schoolId));
 }
 
 // Message Cost operations
@@ -425,7 +494,7 @@ export async function createMessageCost(input: CreateMessageCostInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(message_costs).values({
+  await db.insert(messageCosts).values({
     id,
     schoolId: input.schoolId,
     channel: input.channel,
@@ -440,19 +509,25 @@ export async function createMessageCost(input: CreateMessageCostInput) {
 export async function getMessageCost(schoolId: string, channel: string, period: string) {
   const rows = await db
     .select()
-    .from(message_costs)
-    .where(eq(message_costs.schoolId, schoolId), eq(message_costs.channel, channel), eq(message_costs.period, period))
+    .from(messageCosts)
+    .where(
+      and(
+        eq(messageCosts.schoolId, schoolId),
+        eq(messageCosts.channel, channel),
+        eq(messageCosts.period, period),
+      ),
+    )
     .limit(1);
   return rows[0] ?? null;
 }
 
 export async function listMessageCosts(schoolId: string, channel?: string, period?: string) {
-  const query = db.select().from(message_costs).where(eq(message_costs.schoolId, schoolId));
-  if (channel) {
-    query.where(eq(message_costs.channel, channel));
-  }
-  if (period) {
-    query.where(eq(message_costs.period, period));
-  }
-  return query.orderBy(desc(message_costs.period), desc(message_costs.createdAt));
+  const conditions = [eq(messageCosts.schoolId, schoolId)];
+  if (channel) conditions.push(eq(messageCosts.channel, channel));
+  if (period) conditions.push(eq(messageCosts.period, period));
+  return db
+    .select()
+    .from(messageCosts)
+    .where(and(...conditions))
+    .orderBy(desc(messageCosts.period), desc(messageCosts.createdAt));
 }

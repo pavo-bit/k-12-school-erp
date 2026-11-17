@@ -1,8 +1,8 @@
-# System Architecture
+﻿# System Architecture
 
 **Status:** Baseline  
 **Owner:** Engineering  
-**Related:** [05-tech-stack.md](05-tech-stack.md), [06-gcp-infrastructure.md](06-gcp-infrastructure.md), [07-multi-tenancy-and-authorization.md](07-multi-tenancy-and-authorization.md), [adr/](adr/README.md)
+**Related:** [05-tech-stack.md](05-tech-stack.md), [06-aws-infrastructure.md](06-aws-infrastructure.md), [07-multi-tenancy-and-authorization.md](07-multi-tenancy-and-authorization.md), [adr/](adr/README.md)
 
 ---
 
@@ -341,7 +341,7 @@ Significant choices are recorded in [`adr/`](adr/README.md). The baseline set co
 ## 13. Related Documents
 
 - [05-tech-stack.md](05-tech-stack.md)
-- [06-gcp-infrastructure.md](06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](06-aws-infrastructure.md)
 - [07-multi-tenancy-and-authorization.md](07-multi-tenancy-and-authorization.md)
 - [08-data-model.md](08-data-model.md)
 - [09-api-contracts.md](09-api-contracts.md)

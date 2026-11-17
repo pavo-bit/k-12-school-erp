@@ -1,4 +1,4 @@
-# School ERP — Documentation
+﻿# School ERP — Documentation
 
 **Status:** Baseline v1.0  
 **Last updated:** 14 November 2026  
@@ -11,7 +11,7 @@
 
 This folder is the working source of truth for the School ERP project. It captures the agreed product plan, technical architecture, delivery model, operating model, and the decisions still open before implementation.
 
-The project is a **multi-tenant, India-first, K-12 school ERP SaaS** built entirely in-house on **GCP Mumbai**, with **Next.js/TypeScript**, **Cloud Run**, **Cloud SQL PostgreSQL**, **Cloudflare**, and **Expo mobile apps**.
+The project is a **multi-tenant, India-first, K-12 school ERP SaaS** built entirely in-house on **AWS Mumbai**, with **Next.js/TypeScript**, **Lambda**, **Aurora Serverless PostgreSQL**, **CloudFront**, and **Expo mobile apps**.
 
 **Planned delivery windows**
 
@@ -42,7 +42,7 @@ The project is a **multi-tenant, India-first, K-12 school ERP SaaS** built entir
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
 | [04-system-architecture.md](04-system-architecture.md)                         | Context, containers, request flows, background jobs, failure modes |
 | [05-tech-stack.md](05-tech-stack.md)                                           | Stack choices, versions, rationale, local tooling                  |
-| [06-gcp-infrastructure.md](06-gcp-infrastructure.md)                           | GCP topology, services, IAM, environments, provisioning checklist  |
+| [06-aws-infrastructure.md](06-aws-infrastructure.md)                           | GCP topology, services, IAM, environments, provisioning checklist  |
 | [07-multi-tenancy-and-authorization.md](07-multi-tenancy-and-authorization.md) | Tenant model, RLS, auth, RBAC, data scoping                        |
 | [08-data-model.md](08-data-model.md)                                           | Entity model, conventions, critical tables, retention              |
 | [09-api-contracts.md](09-api-contracts.md)                                     | REST API principles, auth, errors, endpoints, sync, webhooks       |
@@ -85,15 +85,16 @@ The project is a **multi-tenant, India-first, K-12 school ERP SaaS** built entir
 | Tenancy   | Shared PostgreSQL database, `school_id`, Row Level Security                |
 | Timeline  | 10–12 months; beta June 2027; GA October 2027                              |
 | Team      | 3 full-time founders + 1 in-house mobile engineer + 1 in-house QA engineer |
-| Cloud     | GCP Mumbai (`asia-south1`)                                                 |
-| Web/API   | Next.js + TypeScript on Cloud Run                                          |
-| Database  | Cloud SQL PostgreSQL, single-zone until 10 schools, then HA                |
-| Jobs      | Cloud Tasks + Cloud Run workers; transactional outbox                      |
+| Cloud     | AWS Mumbai (`ap-south-1`)                                                  |
+| Web/API   | Next.js + TypeScript on Lambda via OpenNext + CloudFront                   |
+| Database  | Aurora Serverless v2 PostgreSQL, auto-scaling, multi-AZ                    |
+| Jobs      | SQS + Lambda workers; transactional outbox; EventBridge Scheduler          |
 | Auth      | Better Auth + Postgres; web sessions; mobile JWT + refresh                 |
 | Mobile    | One Expo/React Native codebase; Parent + Teacher apps; Android first       |
 | Offline   | Attendance only, SQLCipher-encrypted local database                        |
-| Routing   | `*.erp.com` via Cloudflare Worker + secret origin header                   |
-| Edge      | Cloudflare free DNS, SSL, WAF, CDN                                         |
+| Routing   | `*.erp.com` via CloudFront + Lambda@Edge + origin secret                   |
+| Edge      | CloudFront CDN, WAF, TLS                                                   |
+| Storage   | Amazon S3 (documents, generated files, backups)                            |
 | Payments  | Razorpay / UPI                                                             |
 | Messaging | Resend email, MSG91 SMS with DLT, WhatsApp BSP                             |
 | Push      | Firebase Cloud Messaging                                                   |

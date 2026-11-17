@@ -386,14 +386,15 @@ Local SQLite tables for offline attendance:
 ## 9. Infrastructure Plan
 
 - One GCP project for prod and staging, separate databases, services, queues, secrets, and service accounts.
-- Cloud Run: `web` min 1 / max 8; `worker` min 0 / max 6; `pdf-worker` min 0 / max 3.
-- Cloud SQL PostgreSQL 16, single zone, private IP, PITR 7 days.
-- Cloud Tasks queues: notifications, imports, exports, PDF, reconciliation, maintenance.
-- Cloud Scheduler: outbox dispatch, fee reminders, attendance alerts, reconciliation, retention, usage snapshot.
-- GCS buckets for documents, generated files, exports, backups, Terraform state.
-- Secret Manager for DB, auth, Razorpay, Resend, MSG91, WhatsApp, FCM, origin secret, Sentry.
-- Cloudflare Worker for wildcard school routing and origin protection.
-- Terraform modules for network, SQL, Cloud Run, storage, tasks, IAM, secrets, monitoring.
+- Lambda: `web` via OpenNext, `worker`, `pdf-worker` (Chromium layer).
+- Aurora Serverless v2 PostgreSQL 16, multi-AZ, auto-scaling, PITR 7 days.
+- RDS Proxy for Lambda connection pooling.
+- SQS queues: notifications, imports, exports, PDF, reconciliation, maintenance; DLQ for each.
+- EventBridge Scheduler: outbox dispatch, fee reminders, attendance alerts, reconciliation, retention, usage snapshot.
+- S3 buckets for documents, generated files, exports, backups, Terraform state.
+- Secrets Manager for DB, auth, Razorpay, Resend, MSG91, WhatsApp, FCM, origin secret, Sentry.
+- CloudFront + Lambda@Edge for wildcard school routing and origin protection.
+- Terraform/CDK modules for VPC, Aurora, Lambda, S3, SQS, IAM, secrets, monitoring.
 - GitHub Actions: typecheck, lint, unit, integration with Postgres, build, migrate, deploy staging/prod, Android build.
 
 ---

@@ -1,15 +1,15 @@
-import {
+﻿import {
   db,
-  exam_terms,
+  examTerms,
   exams,
-  exam_subjects,
-  grading_schemes,
-  grade_bands,
+  examSubjects,
+  gradingSchemes,
+  gradeBands,
   marks,
-  mark_submissions,
+  markSubmissions,
   results,
-  report_card_templates,
-  report_cards,
+  reportCardTemplates,
+  reportCards,
 } from "@school-erp/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
 import { writeAudit } from "@school-erp/db";
@@ -30,17 +30,16 @@ export async function createExamTerm(input: CreateExamTermInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(exam_terms).values({
-    id,
-    schoolId: input.schoolId,
-    academicYearId: input.academicYearId,
-    name: input.name,
-    startDate: input.startDate,
-    endDate: input.endDate,
-    status: input.status ?? "active",
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(examTerms).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      academicYearId: input.academicYearId,
+      name: input.name,
+      startDate: input.startDate,
+      endDate: input.endDate,
+    },
+  ]);
 
   await writeAudit({
     scope: "school",
@@ -56,31 +55,33 @@ export async function createExamTerm(input: CreateExamTermInput) {
 }
 
 export async function getExamTerm(id: string) {
-  const rows = await db.select().from(exam_terms).where(eq(exam_terms.id, id)).limit(1);
+  const rows = await db.select().from(examTerms).where(eq(examTerms.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function listExamTerms(schoolId: string, academicYearId?: string) {
-  const query = db.select().from(exam_terms).where(eq(exam_terms.schoolId, schoolId));
-  if (academicYearId) {
-    query.where(eq(exam_terms.academicYearId, academicYearId));
-  }
-  return query.orderBy(desc(exam_terms.startDate));
+  const conditions = [eq(examTerms.schoolId, schoolId)];
+  if (academicYearId) conditions.push(eq(examTerms.academicYearId, academicYearId));
+  return db
+    .select()
+    .from(examTerms)
+    .where(and(...conditions))
+    .orderBy(desc(examTerms.startDate));
 }
 
-export async function updateExamTerm(id: string, input: any, actorId: string) {
+export async function updateExamTerm(id: string, input: Record<string, unknown>, actorId: string) {
   const existing = await getExamTerm(id);
   if (!existing) {
     throw new Error("Exam term not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.name !== undefined) updates.name = input.name;
   if (input.startDate !== undefined) updates.startDate = input.startDate;
   if (input.endDate !== undefined) updates.endDate = input.endDate;
   if (input.status !== undefined) updates.status = input.status;
 
-  await db.update(exam_terms).set(updates).where(eq(exam_terms.id, id));
+  await db.update(examTerms).set(updates).where(eq(examTerms.id, id));
   await writeAudit({
     scope: "school",
     schoolId: existing.schoolId,
@@ -139,20 +140,22 @@ export async function getExam(id: string) {
 }
 
 export async function listExams(schoolId: string, termId?: string) {
-  const query = db.select().from(exams).where(eq(exams.schoolId, schoolId));
-  if (termId) {
-    query.where(eq(exams.termId, termId));
-  }
-  return query.orderBy(desc(exams.createdAt));
+  const conditions = [eq(exams.schoolId, schoolId)];
+  if (termId) conditions.push(eq(exams.termId, termId));
+  return db
+    .select()
+    .from(exams)
+    .where(and(...conditions))
+    .orderBy(desc(exams.createdAt));
 }
 
-export async function updateExam(id: string, input: any, actorId: string) {
+export async function updateExam(id: string, input: Record<string, unknown>, actorId: string) {
   const existing = await getExam(id);
   if (!existing) {
     throw new Error("Exam not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.name !== undefined) updates.name = input.name;
   if (input.type !== undefined) updates.type = input.type;
   if (input.status !== undefined) updates.status = input.status;
@@ -190,20 +193,20 @@ export async function createExamSubject(input: CreateExamSubjectInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(exam_subjects).values({
-    id,
-    schoolId: input.schoolId,
-    examId: input.examId,
-    classId: input.classId,
-    subjectId: input.subjectId,
-    maxMarks: input.maxMarks,
-    passMarks: input.passMarks,
-    theoryMax: input.theoryMax ?? null,
-    practicalMax: input.practicalMax ?? null,
-    weightage: input.weightage ?? null,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(examSubjects).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      examId: input.examId,
+      classId: input.classId,
+      subjectId: input.subjectId,
+      maxMarks: String(input.maxMarks),
+      passMarks: String(input.passMarks),
+      theoryMax: input.theoryMax != null ? String(input.theoryMax) : null,
+      practicalMax: input.practicalMax != null ? String(input.practicalMax) : null,
+      weightage: input.weightage ?? 1,
+    },
+  ]);
 
   await writeAudit({
     scope: "school",
@@ -219,16 +222,18 @@ export async function createExamSubject(input: CreateExamSubjectInput) {
 }
 
 export async function getExamSubject(id: string) {
-  const rows = await db.select().from(exam_subjects).where(eq(exam_subjects.id, id)).limit(1);
+  const rows = await db.select().from(examSubjects).where(eq(examSubjects.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function listExamSubjects(schoolId: string, examId?: string) {
-  const query = db.select().from(exam_subjects).where(eq(exam_subjects.schoolId, schoolId));
-  if (examId) {
-    query.where(eq(exam_subjects.examId, examId));
-  }
-  return query.orderBy(exam_subjects.classId, exam_subjects.subjectId);
+  const conditions = [eq(examSubjects.schoolId, schoolId)];
+  if (examId) conditions.push(eq(examSubjects.examId, examId));
+  return db
+    .select()
+    .from(examSubjects)
+    .where(and(...conditions))
+    .orderBy(examSubjects.classId, examSubjects.subjectId);
 }
 
 // Grading Scheme operations
@@ -243,14 +248,13 @@ export async function createGradingScheme(input: CreateGradingSchemeInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(grading_schemes).values({
-    id,
-    schoolId: input.schoolId,
-    name: input.name,
-    description: input.description ?? null,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(gradingSchemes).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      name: input.name,
+    },
+  ]);
 
   await writeAudit({
     scope: "school",
@@ -270,8 +274,8 @@ export interface CreateMarksInput {
   schoolId: string;
   examSubjectId: string;
   studentId: string;
-  theoryMarks: number;
-  practicalMarks?: number;
+  theoryMarks?: number | undefined;
+  practicalMarks?: number | undefined;
   status?: string;
   enteredBy: string;
   enteredAt?: Date;
@@ -283,7 +287,7 @@ export async function createMarks(input: CreateMarksInput) {
 
   // Calculate totals
   const theoryMax = input.practicalMarks ? 100 : 100; // Simplified
-  const totalMarks = input.theoryMarks + (input.practicalMarks ?? 0);
+  const totalMarks = (input.theoryMarks ?? 0) + (input.practicalMarks ?? 0);
   const percentage = (totalMarks / theoryMax) * 100;
 
   // Determine grade based on percentage
@@ -292,23 +296,19 @@ export async function createMarks(input: CreateMarksInput) {
   // Determine result status
   const resultStatus = percentage >= 40 ? "passed" : "failed";
 
-  await db.insert(marks).values({
-    id,
-    schoolId: input.schoolId,
-    examSubjectId: input.examSubjectId,
-    studentId: input.studentId,
-    theoryMarks: input.theoryMarks,
-    practicalMarks: input.practicalMarks ?? null,
-    totalMarks,
-    percentage,
-    grade,
-    resultStatus,
-    status: input.status ?? "draft",
-    enteredBy: input.enteredBy,
-    enteredAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(marks).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      examSubjectId: input.examSubjectId,
+      studentId: input.studentId,
+      theoryMarks: input.theoryMarks != null ? String(input.theoryMarks) : null,
+      practicalMarks: input.practicalMarks != null ? String(input.practicalMarks) : null,
+      status: input.status ?? "draft",
+      enteredBy: input.enteredBy,
+      version: 1,
+    },
+  ]);
 
   return { id, studentId: input.studentId, totalMarks, percentage, grade, resultStatus };
 }
@@ -330,23 +330,23 @@ export async function getMarks(id: string) {
 }
 
 export async function listMarks(schoolId: string, examSubjectId?: string, studentId?: string) {
-  const query = db.select().from(marks).where(eq(marks.schoolId, schoolId));
-  if (examSubjectId) {
-    query.where(eq(marks.examSubjectId, examSubjectId));
-  }
-  if (studentId) {
-    query.where(eq(marks.studentId, studentId));
-  }
-  return query.orderBy(desc(marks.createdAt));
+  const conditions = [eq(marks.schoolId, schoolId)];
+  if (examSubjectId) conditions.push(eq(marks.examSubjectId, examSubjectId));
+  if (studentId) conditions.push(eq(marks.studentId, studentId));
+  return db
+    .select()
+    .from(marks)
+    .where(and(...conditions))
+    .orderBy(desc(marks.createdAt));
 }
 
-export async function updateMarks(id: string, input: any, actorId: string) {
+export async function updateMarks(id: string, input: Record<string, unknown>, actorId: string) {
   const existing = await getMarks(id);
   if (!existing) {
     throw new Error("Marks not found");
   }
 
-  const updates: any = { updatedAt: new Date() };
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (input.theoryMarks !== undefined) updates.theoryMarks = input.theoryMarks;
   if (input.practicalMarks !== undefined) updates.practicalMarks = input.practicalMarks;
   if (input.status !== undefined) updates.status = input.status;
@@ -372,8 +372,8 @@ export interface CreateResultInput {
   schoolId: string;
   examId: string;
   studentId: string;
-  totalMarks: number;
-  percentage: number;
+  totalMarks: string;
+  percentage: string;
   grade: string;
   resultStatus: string;
   version?: number;
@@ -384,21 +384,27 @@ export async function createResult(input: CreateResultInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(results).values({
+  await db.insert(results as unknown as Parameters<typeof db.insert>[0]).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      examId: input.examId,
+      studentId: input.studentId,
+      totalMarks: String(input.totalMarks),
+      percentage: String(input.percentage),
+      grade: input.grade ?? null,
+      resultStatus: input.resultStatus,
+      version: input.version ?? 1,
+    },
+  ]);
+
+  return {
     id,
-    schoolId: input.schoolId,
-    examId: input.examId,
     studentId: input.studentId,
     totalMarks: input.totalMarks,
     percentage: input.percentage,
     grade: input.grade,
-    resultStatus: input.resultStatus,
-    version: input.version ?? 1,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  return { id, studentId: input.studentId, totalMarks: input.totalMarks, percentage: input.percentage, grade: input.grade };
+  };
 }
 
 export async function getResult(id: string) {
@@ -407,14 +413,14 @@ export async function getResult(id: string) {
 }
 
 export async function listResults(schoolId: string, examId?: string, studentId?: string) {
-  const query = db.select().from(results).where(eq(results.schoolId, schoolId));
-  if (examId) {
-    query.where(eq(results.examId, examId));
-  }
-  if (studentId) {
-    query.where(eq(results.studentId, studentId));
-  }
-  return query.orderBy(desc(results.percentage));
+  const conditions = [eq(results.schoolId, schoolId)];
+  if (examId) conditions.push(eq(results.examId, examId));
+  if (studentId) conditions.push(eq(results.studentId, studentId));
+  return db
+    .select()
+    .from(results)
+    .where(and(...conditions))
+    .orderBy(desc(results.percentage));
 }
 
 // Report Card Template operations
@@ -432,17 +438,16 @@ export async function createReportCardTemplate(input: CreateReportCardTemplateIn
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(report_card_templates).values({
-    id,
-    schoolId: input.schoolId,
-    name: input.name,
-    htmlTemplate: input.htmlTemplate,
-    version: input.version ?? 1,
-    isDefault: input.isDefault ?? false,
-    status: input.status ?? "draft",
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(reportCardTemplates).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      name: input.name,
+      htmlTemplate: input.htmlTemplate,
+      version: input.version ?? 1,
+      isActive: true,
+    },
+  ]);
 
   await writeAudit({
     scope: "school",
@@ -474,37 +479,37 @@ export async function createReportCard(input: CreateReportCardInput) {
   const id = randomUUID();
   const now = new Date();
 
-  await db.insert(report_cards).values({
-    id,
-    schoolId: input.schoolId,
-    examId: input.examId,
-    studentId: input.studentId,
-    templateId: input.templateId,
-    objectPath: input.objectPath,
-    status: input.status ?? "draft",
-    publishedAt: input.publishedAt ?? null,
-    version: input.version ?? 1,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(reportCards).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      examId: input.examId,
+      studentId: input.studentId,
+      templateVersion: parseInt(input.templateId ?? "1", 10),
+      objectPath: input.objectPath ?? null,
+      status: input.status ?? "draft",
+      publishedAt: input.publishedAt ?? null,
+      version: input.version ?? 1,
+    },
+  ]);
 
   return { id, studentId: input.studentId, status: input.status ?? "draft" };
 }
 
 export async function getReportCard(id: string) {
-  const rows = await db.select().from(report_cards).where(eq(report_cards.id, id)).limit(1);
+  const rows = await db.select().from(reportCards).where(eq(reportCards.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function listReportCards(schoolId: string, examId?: string, studentId?: string) {
-  const query = db.select().from(report_cards).where(eq(report_cards.schoolId, schoolId));
-  if (examId) {
-    query.where(eq(report_cards.examId, examId));
-  }
-  if (studentId) {
-    query.where(eq(report_cards.studentId, studentId));
-  }
-  return query.orderBy(desc(report_cards.createdAt));
+  const conditions = [eq(reportCards.schoolId, schoolId)];
+  if (examId) conditions.push(eq(reportCards.examId, examId));
+  if (studentId) conditions.push(eq(reportCards.studentId, studentId));
+  return db
+    .select()
+    .from(reportCards)
+    .where(and(...conditions))
+    .orderBy(desc(reportCards.createdAt));
 }
 
 // Mark Submission operations
@@ -521,31 +526,31 @@ export async function createMarkSubmission(input: CreateMarkSubmissionInput) {
   const id = randomUUID();
   const now = input.submittedAt ?? new Date();
 
-  await db.insert(mark_submissions).values({
-    id,
-    schoolId: input.schoolId,
-    examSubjectId: input.examSubjectId,
-    sectionId: input.sectionId,
-    totalSubmitted: 0, // Will be calculated from marks
-    status: input.status ?? "submitted",
-    submittedBy: input.submittedBy,
-    submittedAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await db.insert(markSubmissions).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      examSubjectId: input.examSubjectId,
+      sectionId: input.sectionId,
+      status: input.status ?? "submitted",
+      submittedBy: input.submittedBy,
+    },
+  ]);
 
   return { id, examSubjectId: input.examSubjectId, status: input.status ?? "submitted" };
 }
 
 export async function getMarkSubmission(id: string) {
-  const rows = await db.select().from(mark_submissions).where(eq(mark_submissions.id, id)).limit(1);
+  const rows = await db.select().from(markSubmissions).where(eq(markSubmissions.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function listMarkSubmissions(schoolId: string, examSubjectId?: string) {
-  const query = db.select().from(mark_submissions).where(eq(mark_submissions.schoolId, schoolId));
-  if (examSubjectId) {
-    query.where(eq(mark_submissions.examSubjectId, examSubjectId));
-  }
-  return query.orderBy(desc(mark_submissions.createdAt));
+  const conditions = [eq(markSubmissions.schoolId, schoolId)];
+  if (examSubjectId) conditions.push(eq(markSubmissions.examSubjectId, examSubjectId));
+  return db
+    .select()
+    .from(markSubmissions)
+    .where(and(...conditions))
+    .orderBy(desc(markSubmissions.createdAt));
 }

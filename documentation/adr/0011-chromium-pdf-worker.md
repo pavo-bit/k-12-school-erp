@@ -1,9 +1,9 @@
-# ADR-0011: Chromium PDF Worker
+﻿# ADR-0011: Chromium PDF Worker
 
 - **Status:** Accepted
 - **Date:** 14 November 2026
 - **Owner:** Founder 1
-- **Related:** [../04-system-architecture.md](../04-system-architecture.md), [../06-gcp-infrastructure.md](../06-gcp-infrastructure.md), [../modules/exams-and-report-cards.md](../modules/exams-and-report-cards.md)
+- **Related:** [../04-system-architecture.md](../04-system-architecture.md), [../06-aws-infrastructure.md](../06-aws-infrastructure.md), [../modules/exams-and-report-cards.md](../modules/exams-and-report-cards.md)
 
 ---
 
@@ -71,5 +71,5 @@ Run a **dedicated `pdf-worker` Cloud Run service** with headless Chromium:
 ## References
 
 - [04-system-architecture.md](../04-system-architecture.md)
-- [06-gcp-infrastructure.md](../06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](../06-aws-infrastructure.md)
 - [modules/exams-and-report-cards.md](../modules/exams-and-report-cards.md)

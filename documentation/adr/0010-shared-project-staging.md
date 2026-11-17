@@ -1,9 +1,9 @@
-# ADR-0010: Staging in the Production GCP Project
+﻿# ADR-0010: Staging in the Production GCP Project
 
 - **Status:** Accepted
 - **Date:** 14 November 2026
 - **Owner:** Founder 1
-- **Related:** [../06-gcp-infrastructure.md](../06-gcp-infrastructure.md), [../11-security-and-compliance.md](../11-security-and-compliance.md)
+- **Related:** [../06-aws-infrastructure.md](../06-aws-infrastructure.md), [../11-security-and-compliance.md](../11-security-and-compliance.md)
 
 ---
 
@@ -75,5 +75,5 @@ Move staging to a separate project when 10+ schools, a customer security require
 
 ## References
 
-- [06-gcp-infrastructure.md](../06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](../06-aws-infrastructure.md)
 - [11-security-and-compliance.md](../11-security-and-compliance.md)

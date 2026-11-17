@@ -11,12 +11,16 @@ const CreateInvoiceSchema = z.object({
   issueDate: z.string().datetime(),
   dueDate: z.string().datetime(),
   status: z.enum(["draft", "issued", "partial", "paid", "overdue", "cancelled"]).optional(),
-  invoiceLines: z.array(z.object({
-    feeHeadId: z.string().uuid(),
-    amountPaise: z.number().int().min(0),
-    concessionPaise: z.number().int().min(0),
-    netPaise: z.number().int().min(0),
-  })).min(1),
+  invoiceLines: z
+    .array(
+      z.object({
+        feeHeadId: z.string().uuid(),
+        amountPaise: z.number().int().min(0),
+        concessionPaise: z.number().int().min(0),
+        netPaise: z.number().int().min(0),
+      }),
+    )
+    .min(1),
 });
 
 export async function GET(request: Request) {

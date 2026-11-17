@@ -13,7 +13,9 @@ export const CreateFeeHeadSchema = z.object({
 export const UpdateFeeHeadSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   code: z.string().min(1).max(50).optional(),
-  category: z.enum(["tuition", "transport", "library", "lab", "sports", "development", "other"]).optional(),
+  category: z
+    .enum(["tuition", "transport", "library", "lab", "sports", "development", "other"])
+    .optional(),
   isTaxable: z.boolean().optional(),
 });
 

@@ -3,15 +3,18 @@ import { withApi } from "@/server/with-api";
 import { createSalaryStructure } from "@school-erp/hr";
 import { z } from "zod";
 
-const CreateSalaryStructureSchema = z.object({
+const CreateSchema = z.object({
   staffId: z.string().uuid(),
-  effectiveFrom: z.string().datetime(),
-  status: z.enum(["active", "inactive", "draft"]).optional(),
-  salaryStructureLines: z.array(z.object({
-    salaryComponentId: z.string().uuid(),
-    amountPaise: z.number().int().min(0),
-    percentage: z.number().optional(),
-  })).optional(),
+  effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  lines: z
+    .array(
+      z.object({
+        componentId: z.string().uuid(),
+        amountPaise: z.number().int().min(0),
+        percentage: z.number().optional(),
+      }),
+    )
+    .min(1),
 });
 
 export async function POST(request: Request) {
@@ -22,7 +25,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     const body = await request.json().catch(() => null);
-    const parsed = CreateSalaryStructureSchema.safeParse(body);
+    const parsed = CreateSchema.safeParse(body);
     if (!parsed.success)
       return NextResponse.json(
         {
@@ -34,16 +37,15 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const salaryStructure = await createSalaryStructure({
+    const structure = await createSalaryStructure({
       schoolId: ctx.schoolId,
       staffId: parsed.data.staffId,
-      effectiveFrom: new Date(parsed.data.effectiveFrom),
-      status: parsed.data.status,
-      salaryStructureLines: parsed.data.salaryStructureLines,
+      effectiveFrom: parsed.data.effectiveFrom,
+      lines: parsed.data.lines,
       actorId: ctx.userId,
     });
     return NextResponse.json(
-      { data: salaryStructure, meta: { request_id: crypto.randomUUID() } },
+      { data: structure, meta: { request_id: crypto.randomUUID() } },
       { status: 201 },
     );
   });

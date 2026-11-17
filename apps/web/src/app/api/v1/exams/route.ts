@@ -86,11 +86,15 @@ export async function PATCH(request: Request) {
         },
         { status: 400 },
       );
-    const exam = await updateExam(parsed.data.id, {
-      name: parsed.data.name,
-      type: parsed.data.type,
-      status: parsed.data.status,
-    }, ctx.userId);
+    const exam = await updateExam(
+      parsed.data.id,
+      {
+        name: parsed.data.name,
+        type: parsed.data.type,
+        status: parsed.data.status,
+      },
+      ctx.userId,
+    );
     return NextResponse.json({ data: exam, meta: { request_id: crypto.randomUUID() } });
   });
 }

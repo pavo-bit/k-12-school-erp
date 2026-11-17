@@ -25,7 +25,9 @@ export async function withApi(
       };
     };
 
-    const betterSession = await auth.api.getSession({ headers: request.headers as unknown as Headers });
+    const betterSession = await auth.api.getSession({
+      headers: request.headers as unknown as Headers,
+    });
     if (betterSession) {
       const schoolId = await resolveSchoolId(request).catch(() => null);
       try {

@@ -1,12 +1,19 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 // Report schemas
 export const CreateReportSchema = z.object({
   schoolId: z.string().uuid(),
-  type: z.enum(["attendance", "fee_collection", "enrollment", "exam_results", "student_list", "custom"]),
+  type: z.enum([
+    "attendance",
+    "fee_collection",
+    "enrollment",
+    "exam_results",
+    "student_list",
+    "custom",
+  ]),
   name: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
-  filters: z.any(),
+  filters: z.unknown(),
   schedule: z.enum(["none", "daily", "weekly", "monthly"]).default("none"),
   actorId: z.string(),
 });
@@ -14,7 +21,7 @@ export const CreateReportSchema = z.object({
 export const UpdateReportSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   description: z.string().max(1000).optional(),
-  filters: z.any().optional(),
+  filters: z.unknown().optional(),
   schedule: z.enum(["none", "daily", "weekly", "monthly"]).optional(),
 });
 
@@ -24,7 +31,7 @@ export const ReportResponseSchema = z.object({
   type: z.string(),
   name: z.string(),
   description: z.string().nullable(),
-  filters: z.any(),
+  filters: z.unknown(),
   schedule: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -105,23 +112,23 @@ export const ReportJobResponseSchema = z.object({
 export const CreateDashboardSchema = z.object({
   schoolId: z.string().uuid(),
   name: z.string().min(1).max(200),
-  layout: z.any(),
-  widgets: z.array(z.any()),
+  layout: z.unknown(),
+  widgets: z.array(z.unknown()),
   actorId: z.string(),
 });
 
 export const UpdateDashboardSchema = z.object({
   name: z.string().min(1).max(200).optional(),
-  layout: z.any().optional(),
-  widgets: z.array(z.any()).optional(),
+  layout: z.unknown().optional(),
+  widgets: z.array(z.unknown()).optional(),
 });
 
 export const DashboardResponseSchema = z.object({
   id: z.string().uuid(),
   schoolId: z.string().uuid(),
   name: z.string(),
-  layout: z.any(),
-  widgets: z.array(z.any()),
+  layout: z.unknown(),
+  widgets: z.array(z.unknown()),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -132,7 +139,7 @@ export const CreateDashboardWidgetSchema = z.object({
   type: z.enum(["stat_card", "line_chart", "bar_chart", "pie_chart", "table", "kpi"]),
   title: z.string().min(1).max(200),
   dataSource: z.string(),
-  config: z.any(),
+  config: z.unknown(),
   position: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }),
   actorId: z.string(),
 });
@@ -143,8 +150,8 @@ export const DashboardWidgetResponseSchema = z.object({
   type: z.string(),
   title: z.string(),
   dataSource: z.string(),
-  config: z.any(),
-  position: z.any(),
+  config: z.unknown(),
+  position: z.unknown(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -172,7 +179,7 @@ export interface DataSource {
   name: string;
   type: string;
   query: string;
-  parameters: any;
+  parameters: unknown;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -202,5 +209,5 @@ export const TextFilterSchema = z.object({
 export const CompositeFilterSchema = z.object({
   type: z.literal("composite"),
   logicalOperator: z.enum(["and", "or"]),
-  filters: z.array(z.any()),
+  filters: z.array(z.unknown()),
 });

@@ -1,9 +1,9 @@
-# ADR-0003: Run Workloads on Cloud Run
+﻿# ADR-0003: Run Workloads on Cloud Run
 
 - **Status:** Accepted
 - **Date:** 14 November 2026
 - **Owner:** Founder 1
-- **Related:** [../06-gcp-infrastructure.md](../06-gcp-infrastructure.md), [../15-cost-model.md](../15-cost-model.md)
+- **Related:** [../06-aws-infrastructure.md](../06-aws-infrastructure.md), [../15-cost-model.md](../15-cost-model.md)
 
 ---
 
@@ -63,5 +63,5 @@ Use Cloud SQL connectors/Direct VPC egress, Secret Manager, Cloud Tasks, and Clo
 
 ## References
 
-- [06-gcp-infrastructure.md](../06-gcp-infrastructure.md)
+- [06-aws-infrastructure.md](../06-aws-infrastructure.md)
 - [15-cost-model.md](../15-cost-model.md)

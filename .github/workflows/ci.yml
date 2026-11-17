@@ -106,8 +106,8 @@ jobs:
           path: apps/web/.next
           retention-days: 7
 
-  e2e:
-    name: E2E Tests
+  smoke:
+    name: Smoke (prod build + live HTTP checks)
     runs-on: ubuntu-latest
     needs: [build]
     services:
@@ -116,7 +116,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: school_erp_e2e
+          POSTGRES_DB: school_erp_smoke
         ports:
           - 5432:5432
         options: >-
@@ -124,6 +124,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_smoke
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -135,16 +137,39 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @school-erp/db bootstrap
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_e2e
-      - run: npx playwright install --with-deps
       - run: pnpm db:migrate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_e2e
+      - run: pnpm db:seed
       - run: pnpm build
+      - name: Start web in the background
+        run: |
+          nohup pnpm --filter @school-erp/web start > web.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -sf http://localhost:3000/healthz > /dev/null 2>&1; then
+              echo "web is up after ~$((i * 2))s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "web failed to become healthy; last log lines:"
+          tail -n 40 web.log
+          exit 1
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_e2e
-      - run: pnpm test:e2e
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_e2e
-          BASE_URL: http://localhost:3000
+          PORT: "3000"
+          HOSTNAME: "0.0.0.0"
+          NODE_ENV: production
+          BETTER_AUTH_SECRET: 01234567890123456789012345678901
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          ORIGIN_SECRET: ci-smoke-secret
+      - name: Smoke checks
+        run: |
+          set -e
+          echo "healthz -> $(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/healthz)"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/healthz)" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login)" = "200"
+          curl -sf -c /tmp/smoke-cookies.txt -X POST http://localhost:3000/api/v1/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"admin@greenwood.local","password":"Password123!"}' | grep -q userId
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b /tmp/smoke-cookies.txt http://localhost:3000/api/v1/me?school=greenwood)" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b /tmp/smoke-cookies.txt http://localhost:3000/api/v1/students?school=greenwood)" = "200"
+          echo "smoke checks passed"

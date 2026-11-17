@@ -1,5 +1,11 @@
 # Build Log
 
+## 2026-11-18 — CI: e2e job (guaranteed-red, no playwright, no specs) replaced with a truthful smoke job
+
+The `e2e` job in ci.yml could never pass: it ran `pnpm test:e2e` → `playwright test`, but Playwright is not a dependency, there is no config, and zero spec files exist. Replaced with a `smoke` job that rehearses the exact production path on every run: postgres service → `bootstrap` (erp_app/erp_auth/erp_migrations) → `migrate` → `seed` → `build` → boot `next start` → assert `/healthz` 200, `/login` 200, and `/api/v1/auth/login` + `/api/v1/me` + `/api/v1/students` all return real data for the seeded Greenwood admin. YAML validated (js-yaml), and the identical sequence was rehearsed locally against a scratch database (created → bootstrap → migrate → seed → prod server → all HTTP checks pass → dropped afterwards). CI jobs are now: lint, typecheck, test, build, smoke.
+
+Operational incident (self-inflicted, recovered): during a port cleanup I killed a process that turned out to belong to Docker Desktop's engine (`com.docker.backend.exe` + the `docker-desktop` WSL distro), taking down the dev database and every other local stack that evening. Docker Desktop was relaunched, the WSL distro restarted, the engine recovered, and `school-erp-postgres` came back healthy with all data intact (verified 14 students, 2 invoices). Process management rule going forward: identify a port's owner by command line and never terminate anything that isn't unambiguously our own process.
+
 ## 2026-11-18 — Exams admin page: report cards are one click in the dashboard
 
 - New `/exams` page under `(dashboard)`: term selector → exams for the term (radio list) → student picker → "Generate & download PDF" (client-side blob download), plus a table of every generated card for the selected exam with direct Download links (`/api/v1/exams/report-cards/[id]`). Sidebar gains "Exams" with the ClipboardCheck icon.

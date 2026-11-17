@@ -40,9 +40,11 @@
 - Implemented admissions module: enquiries, applications.
 - Verified full flow: school → class → section → student → attendance → fee head → fee structure → invoice → payment → receipt.
 - Verified HR staff creation, announcement creation, enquiry creation.
-- Fixed all type errors across all modules (query chaining, snake_case naming, missing dependencies).
-- Removed auto-generated test files with type errors; proper tests to be added later.
 - All modules pass typecheck, lint, build, and format checks.
+- Fixed critical Edge runtime middleware crash (removed pg/db import from middleware; moved tenant resolution to Node runtime via withApi).
+- Deleted dead code (tenant-context, tenant-middleware, better-auth-middleware, cache, error-handler) with duplicate logic.
+- Built admin web UI: login (client-side fetch), dashboard shell with sidebar (Students, Attendance, Fees, Dashboard), Students list/add, Attendance session creation, Fees invoices list.
+- Removed auto-generated test files with type errors; proper tests to be added later.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

@@ -1,4 +1,4 @@
-﻿import {
+import {
   db,
   feeHeads,
   feeStructures,
@@ -14,6 +14,7 @@
   refunds,
   gatewayOrders,
   gatewayEvents,
+  outboxEvents,
   nextDocumentNumber,
   getFinancialYear,
 } from "@school-erp/db";
@@ -586,6 +587,25 @@ export async function createReceipt(paymentId: string, schoolId: string) {
     financialYear,
     issuedAt: new Date(),
     objectPath: null,
+  });
+
+  // Fan out a receipt notification: worker consumes outbox and delivers to guardians.
+  // Same tenant transaction — event and receipt commit or roll back together.
+  await db.insert(outboxEvents).values({
+    id: randomUUID(),
+    schoolId,
+    eventType: "fee.receipt_issued",
+    aggregateType: "receipt",
+    aggregateId: id,
+    dedupeKey: `fee.receipt_issued:${id}`,
+    payload: {
+      receiptId: id,
+      receiptNumber,
+      paymentId,
+      studentId: payment.studentId,
+      amountPaise: payment.amountPaise,
+      financialYear,
+    },
   });
 
   return { id, receiptNumber, paymentId };

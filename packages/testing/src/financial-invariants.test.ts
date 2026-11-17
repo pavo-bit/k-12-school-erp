@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { withClient, SUPERUSER_URL } from "./helpers";
+import { withClient, SUPERUSER_URL } from "./helpers.js";
 
 /**
  * Financial ledger invariants.

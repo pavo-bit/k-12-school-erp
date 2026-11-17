@@ -1,2 +1,2 @@
-export * from "./service/hr-service";
-export * from "./schemas/hr-schemas";
+export * from "./service/hr-service.js";
+export * from "./schemas/hr-schemas.js";

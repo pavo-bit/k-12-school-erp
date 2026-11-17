@@ -1,3 +1,3 @@
-export * from "./service/communication-service";
-export * from "./schemas/communication-schemas";
-export * from "./service/console-driver";
+export * from "./service/communication-service.js";
+export * from "./schemas/communication-schemas.js";
+export * from "./service/console-driver.js";

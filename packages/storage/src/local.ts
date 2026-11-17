@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile, unlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { StorageDriver } from "./index";
+import type { StorageDriver } from "./index.js";
 
 export function createLocalStorage(basePath: string): StorageDriver {
   return {

@@ -5,7 +5,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { StorageDriver } from "./index";
+import type { StorageDriver } from "./index.js";
 
 export function createS3Storage(bucket: string, region: string): StorageDriver {
   const client = new S3Client({ region });

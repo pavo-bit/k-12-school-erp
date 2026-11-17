@@ -13,7 +13,7 @@
   messageCosts,
 } from "@school-erp/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
-import { sendConsolePush } from "./console-driver";
+import { sendConsolePush } from "./console-driver.js";
 import { writeAudit } from "@school-erp/db";
 import { randomUUID } from "node:crypto";
 

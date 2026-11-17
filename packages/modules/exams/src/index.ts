@@ -1,2 +1,2 @@
-export * from "./service/exams-service";
-export * from "./schemas/exams-schemas";
+export * from "./service/exams-service.js";
+export * from "./schemas/exams-schemas.js";

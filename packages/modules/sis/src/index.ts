@@ -7,10 +7,10 @@ export {
   createEnrollment,
   listEnrollments,
   listStudentsBySection,
-} from "./service/sis-service";
-export { importStudents, exportStudentsCsv } from "./service/csv-import";
+} from "./service/sis-service.js";
+export { importStudents, exportStudentsCsv } from "./service/csv-import.js";
 export type {
   CreateStudentInput,
   CreateGuardianInput,
   CreateEnrollmentInput,
-} from "./service/sis-service";
+} from "./service/sis-service.js";

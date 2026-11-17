@@ -1,5 +1,14 @@
 # Build Log
 
+## 2026-11-18 — Worker does real work: outbox → receipt notifications delivered
+
+The `outbox_events` table shipped since Milestone 1 but nothing produced or consumed it — pure theater. Wired both halves:
+
+- Producer (`@school-erp/fees`): `createReceipt` now inserts `fee.receipt_issued` into `outbox_events` in the same tenant transaction, so the event can never diverge from the receipt. Dedupe via unique `dedupe_key` (`fee.receipt_issued:<receiptId>`).
+- Consumer (`@school-erp/worker`): poller claims due events (`UPDATE … WHERE status='pending' RETURNING`), resolves guardians linked to the student, and for each creates a `notifications` row + `notification_deliveries` row via the console push driver (local; provider adapters — Resend/MSG91/FCM — plug in at the same point). Marks events `processed` on success; retries with 30s backoff and `failed` after 3 attempts. Exposes `/outbox/stats` for ops.
+- Verified end-to-end on the live dev DB: RCP-000003 issued → outbox pending → worker claimed → guardian push logged (`fee receipt RCP-000003 issued — ₹1,500.00`) → `notification` + `notification_deliveries` rows created → outbox `processed` (attempts=1). Guardian Rohit Verma was linked to student TEST001 for the test (dev data).
+- Packaging fix that unblocked raw-node ESM: the workspace's dist output used extensionless relative imports (Next/tsx tolerate them; `node dist/server.js` did not). All `packages/*` sources rewritten to explicit `.js` extensions; rebuild verified (tests 19/19, typecheck, lint, format green). `apps/worker` also switched to Bundler module resolution to match every other workspace package.
+
 ## 2026-11-18 — Teacher attendance in the mobile app + roster API
 
 - New endpoint gap closed: `GET /api/v1/students?sectionId=` returns the section roster (enrollments ⨝ active students) — previously there was no way to know who belongs to a section. Also added `POST/GET /api/v1/academics/enrollments` (createEnrollment/listEnrollments service existed but was unreachable over HTTP).

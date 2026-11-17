@@ -7,11 +7,15 @@ export {
   listEntries,
   deleteEntry,
   TimetableError,
-} from "./service/timetable-service";
+} from "./service/timetable-service.js";
 export type {
   CreatePeriodInput,
   CreateRoomInput,
   SetEntryInput,
   EntryDto,
-} from "./service/timetable-service";
-export { CreatePeriodSchema, CreateRoomSchema, SetEntrySchema } from "./schemas/timetable-schemas";
+} from "./service/timetable-service.js";
+export {
+  CreatePeriodSchema,
+  CreateRoomSchema,
+  SetEntrySchema,
+} from "./schemas/timetable-schemas.js";

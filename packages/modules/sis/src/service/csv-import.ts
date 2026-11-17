@@ -1,6 +1,6 @@
 import { db, students } from "@school-erp/db";
 import { eq, and } from "drizzle-orm";
-import { createStudent } from "./sis-service";
+import { createStudent } from "./sis-service.js";
 import { randomUUID } from "node:crypto";
 
 export interface ImportResult {

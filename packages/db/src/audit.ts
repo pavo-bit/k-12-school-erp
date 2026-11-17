@@ -1,5 +1,5 @@
-import { db } from "./client";
-import { auditLogs } from "./schema/index";
+import { db } from "./client.js";
+import { auditLogs } from "./schema/index.js";
 
 export interface AuditInput {
   scope: "school" | "platform";

@@ -9,7 +9,7 @@ import {
   APP_URL,
   GREENWOOD_SCHOOL_ID,
   BOGUS_SCHOOL_ID,
-} from "./helpers";
+} from "./helpers.js";
 
 /**
  * Verifies the AsyncLocalStorage-scoped database handle that production request

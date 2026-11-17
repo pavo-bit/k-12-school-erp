@@ -1,2 +1,2 @@
-export * from "./service/platform-service";
-export * from "./schemas/platform-schemas";
+export * from "./service/platform-service.js";
+export * from "./schemas/platform-schemas.js";

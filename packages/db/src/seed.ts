@@ -10,7 +10,7 @@ import {
   memberships,
   users,
   accounts,
-} from "./schema/index";
+} from "./schema/index.js";
 import { sql } from "drizzle-orm";
 
 async function seed() {

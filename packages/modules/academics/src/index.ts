@@ -1,1 +1,1 @@
-export * from "./service/academics-service";
+export * from "./service/academics-service.js";

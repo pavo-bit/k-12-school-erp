@@ -9,5 +9,5 @@ export {
   getSyncOperation,
   createSyncOperation,
   updateSyncOperation,
-} from "./service/attendance-service";
-export type { CreateSessionInput, MarkAttendanceInput } from "./service/attendance-service";
+} from "./service/attendance-service.js";
+export type { CreateSessionInput, MarkAttendanceInput } from "./service/attendance-service.js";

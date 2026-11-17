@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool, type PoolClient } from "pg";
-import * as schema from "./schema/index";
+import * as schema from "./schema/index.js";
 
 const connectionString = process.env.DATABASE_URL ?? "postgres://erp:erp@localhost:5432/erp";
 

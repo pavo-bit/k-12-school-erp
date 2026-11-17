@@ -1,4 +1,4 @@
-import { db } from "./client";
+import { db } from "./client.js";
 import { sql } from "drizzle-orm";
 
 /** Indian financial year: April–March, formatted like "2026-27". */

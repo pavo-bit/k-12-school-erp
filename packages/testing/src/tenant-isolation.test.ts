@@ -7,7 +7,7 @@ import {
   APP_URL,
   GREENWOOD_SCHOOL_ID,
   BOGUS_SCHOOL_ID,
-} from "./helpers";
+} from "./helpers.js";
 
 /**
  * Proves tenant isolation from the perspective of the production runtime role (erp_app).

@@ -1,5 +1,5 @@
-import type { Db } from "./client";
-import { runWithTenant } from "./client";
+import type { Db } from "./client.js";
+import { runWithTenant } from "./client.js";
 
 export interface TenantContext {
   schoolId: string;

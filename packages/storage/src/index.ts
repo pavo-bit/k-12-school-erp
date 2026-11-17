@@ -5,5 +5,5 @@ export interface StorageDriver {
   getSignedUrl(key: string, expiresInSeconds: number): Promise<string>;
 }
 
-export { createLocalStorage } from "./local";
-export { createS3Storage } from "./s3";
+export { createLocalStorage } from "./local.js";
+export { createS3Storage } from "./s3.js";

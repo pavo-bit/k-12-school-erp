@@ -14,10 +14,23 @@
   refunds,
   gatewayOrders,
   gatewayEvents,
+  nextDocumentNumber,
+  getFinancialYear,
 } from "@school-erp/db";
-import { eq, and, desc, sql, gte, lte, sum, isNull } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { writeAudit } from "@school-erp/db";
 import { randomUUID } from "node:crypto";
+
+/** Domain error carrying a stable machine code for API mapping. */
+export class FeeError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "FeeError";
+  }
+}
 
 // Fee Head operations
 export interface CreateFeeHeadInput {
@@ -234,11 +247,12 @@ export interface CreateInvoiceInput {
   schoolId: string;
   studentId: string;
   academicYearId: string;
-  financialYear: string;
-  invoiceNumber: string;
+  financialYear?: string;
+  /** Optional override; omitted → allocated atomically from document_sequences (INV-000001...). */
+  invoiceNumber?: string;
   issueDate: Date;
   dueDate: Date;
-  status: string;
+  status?: string;
   invoiceLines: Array<{
     feeHeadId: string;
     amountPaise: number;
@@ -251,6 +265,12 @@ export interface CreateInvoiceInput {
 export async function createInvoice(input: CreateInvoiceInput) {
   const id = randomUUID();
   const totalPaise = input.invoiceLines.reduce((sum, line) => sum + line.netPaise, 0);
+  if (totalPaise <= 0) {
+    throw new FeeError("INVALID_TOTAL", "Invoice total must be positive.");
+  }
+  const financialYear = input.financialYear ?? getFinancialYear(new Date());
+  const invoiceNumber =
+    input.invoiceNumber ?? (await nextDocumentNumber(input.schoolId, "invoice", financialYear));
 
   // Insert invoice
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,13 +280,13 @@ export async function createInvoice(input: CreateInvoiceInput) {
       schoolId: input.schoolId,
       studentId: input.studentId,
       academicYearId: input.academicYearId,
-      financialYear: input.financialYear,
-      invoiceNumber: input.invoiceNumber,
+      financialYear,
+      invoiceNumber,
       issueDate: input.issueDate,
       dueDate: input.dueDate,
       totalPaise,
       paidPaise: 0,
-      status: input.status,
+      status: input.status ?? "issued",
       version: 1,
     },
   ]);
@@ -291,10 +311,10 @@ export async function createInvoice(input: CreateInvoiceInput) {
     action: "invoice.created",
     entityType: "invoice",
     entityId: id,
-    after: { invoiceNumber: input.invoiceNumber, totalPaise, status: input.status },
+    after: { invoiceNumber, totalPaise, status: input.status ?? "issued" },
   });
 
-  return { id, invoiceNumber: input.invoiceNumber, totalPaise, status: input.status };
+  return { id, invoiceNumber, totalPaise, status: input.status ?? "issued" };
 }
 
 export async function getInvoice(id: string) {
@@ -402,10 +422,68 @@ export interface PaymentAllocationInput {
   schoolId: string;
   paymentId: string;
   invoiceId: string;
-  amountPaise: number;
+  /** Omitted → allocate the smaller of (payment's unallocated balance, invoice outstanding). */
+  amountPaise?: number;
+  actorId?: string;
 }
 
+/**
+ * Applies a payment to an invoice atomically:
+ *   locks the payment row (FOR UPDATE), validates balances on both sides,
+ *   inserts the allocation, and posts it to the invoice (paid_paise + status).
+ * Runs inside the caller's tenant transaction, so the whole thing commits or rolls back together.
+ */
 export async function createPaymentAllocation(input: PaymentAllocationInput) {
+  // Lock the payment row — concurrent allocations against the same payment serialize here.
+  const paymentRows = await db
+    .select()
+    .from(payments)
+    .where(and(eq(payments.id, input.paymentId), eq(payments.schoolId, input.schoolId)))
+    .for("update")
+    .limit(1);
+  const payment = paymentRows[0];
+  if (!payment) {
+    throw new FeeError("REFERENCE_NOT_FOUND", "Payment not found in this school.");
+  }
+
+  const invoiceRows = await db
+    .select()
+    .from(invoices)
+    .where(and(eq(invoices.id, input.invoiceId), eq(invoices.schoolId, input.schoolId)))
+    .limit(1);
+  const invoice = invoiceRows[0];
+  if (!invoice) {
+    throw new FeeError("REFERENCE_NOT_FOUND", "Invoice not found in this school.");
+  }
+
+  const allocatedRows = await db
+    .select({ total: sql<string>`coalesce(sum(${paymentAllocations.amountPaise}), 0)::bigint` })
+    .from(paymentAllocations)
+    .where(eq(paymentAllocations.paymentId, payment.id));
+  const alreadyAllocated = Number(allocatedRows[0]?.total ?? 0);
+  const unallocated = Number(payment.amountPaise) - alreadyAllocated;
+  const outstanding = Number(invoice.totalPaise) - Number(invoice.paidPaise);
+
+  const requested = input.amountPaise ?? Math.min(unallocated, outstanding);
+  if (requested <= 0) {
+    throw new FeeError(
+      "NOTHING_TO_ALLOCATE",
+      "No allocatable balance remains on the payment or the invoice.",
+    );
+  }
+  if (requested > unallocated) {
+    throw new FeeError(
+      "OVER_ALLOCATED_PAYMENT",
+      `Amount exceeds the payment's unallocated balance (${unallocated} paise).`,
+    );
+  }
+  if (requested > outstanding) {
+    throw new FeeError(
+      "OVER_ALLOCATED_INVOICE",
+      `Amount exceeds the invoice's outstanding balance (${outstanding} paise).`,
+    );
+  }
+
   const id = randomUUID();
   await db.insert(paymentAllocations).values([
     {
@@ -413,46 +491,81 @@ export async function createPaymentAllocation(input: PaymentAllocationInput) {
       schoolId: input.schoolId,
       paymentId: input.paymentId,
       invoiceId: input.invoiceId,
-      amountPaise: input.amountPaise,
+      amountPaise: requested,
     },
   ]);
 
-  return { id, paymentId: input.paymentId, invoiceId: input.invoiceId };
+  const newPaidPaise = Number(invoice.paidPaise) + requested;
+  const newStatus = newPaidPaise >= Number(invoice.totalPaise) ? "paid" : "partial";
+  await db
+    .update(invoices)
+    .set({ paidPaise: newPaidPaise, status: newStatus, updatedAt: new Date() })
+    .where(eq(invoices.id, invoice.id));
+
+  if (input.actorId) {
+    await writeAudit({
+      scope: "school",
+      schoolId: input.schoolId,
+      actorId: input.actorId,
+      action: "payment.allocated",
+      entityType: "payment_allocation",
+      entityId: id,
+      after: {
+        paymentId: input.paymentId,
+        invoiceId: input.invoiceId,
+        amountPaise: requested,
+        invoiceStatus: newStatus,
+      },
+    });
+  }
+
+  return {
+    id,
+    paymentId: input.paymentId,
+    invoiceId: input.invoiceId,
+    amountPaise: requested,
+    invoicePaidPaise: newPaidPaise,
+    invoiceStatus: newStatus,
+  };
 }
 
 // Receipt operations
 export async function createReceipt(paymentId: string, schoolId: string) {
-  const payment = await getPayment(paymentId);
+  const paymentRows = await db
+    .select()
+    .from(payments)
+    .where(and(eq(payments.id, paymentId), eq(payments.schoolId, schoolId)))
+    .limit(1);
+  const payment = paymentRows[0];
   if (!payment) {
-    throw new Error("Payment not found");
+    throw new FeeError("REFERENCE_NOT_FOUND", "Payment not found in this school.");
   }
 
-  // Generate receipt number
-  const receiptNumber = await generateReceiptNumber(schoolId);
+  const existing = await db
+    .select({ id: receipts.id })
+    .from(receipts)
+    .where(eq(receipts.paymentId, paymentId))
+    .limit(1);
+  if (existing[0]) {
+    throw new FeeError("RECEIPT_EXISTS", "A receipt already exists for this payment.");
+  }
 
-  // Create receipt record
+  // Gapless, school-scoped receipt number from document_sequences.
+  const financialYear = getFinancialYear(new Date());
+  const receiptNumber = await nextDocumentNumber(schoolId, "receipt", financialYear);
+
   const id = randomUUID();
   await db.insert(receipts).values({
     id,
     schoolId,
     paymentId,
     receiptNumber,
-    financialYear: getFinancialYear(new Date()),
+    financialYear,
     issuedAt: new Date(),
-    objectPath: null, // Will be generated later
+    objectPath: null,
   });
 
   return { id, receiptNumber, paymentId };
-}
-
-async function generateReceiptNumber(schoolId: string): Promise<string> {
-  // This would use a sequence or generate based on school/year
-  return `REC-${schoolId.slice(0, 8)}-${Date.now().toString().slice(-6)}`;
-}
-
-function getFinancialYear(date: Date): string {
-  const year = date.getFullYear();
-  return `${year}-${(year + 1).toString().slice(-2)}`;
 }
 
 // Credit Note operations
@@ -502,6 +615,32 @@ export interface CreateRefundInput {
 }
 
 export async function createRefund(input: CreateRefundInput) {
+  const paymentRows = await db
+    .select()
+    .from(payments)
+    .where(and(eq(payments.id, input.paymentId), eq(payments.schoolId, input.schoolId)))
+    .limit(1);
+  const payment = paymentRows[0];
+  if (!payment) {
+    throw new FeeError("REFERENCE_NOT_FOUND", "Payment not found in this school.");
+  }
+
+  if (input.amountPaise <= 0) {
+    throw new FeeError("INVALID_AMOUNT", "Refund amount must be positive.");
+  }
+
+  const priorRows = await db
+    .select({ total: sql<string>`coalesce(sum(${refunds.amountPaise}), 0)::bigint` })
+    .from(refunds)
+    .where(eq(refunds.paymentId, input.paymentId));
+  const alreadyRefunded = Number(priorRows[0]?.total ?? 0);
+  if (alreadyRefunded + input.amountPaise > Number(payment.amountPaise)) {
+    throw new FeeError(
+      "REFUND_EXCEEDS_PAYMENT",
+      `Refund exceeds the remaining refundable amount (${Number(payment.amountPaise) - alreadyRefunded} paise).`,
+    );
+  }
+
   const id = randomUUID();
   await db.insert(refunds).values({
     id,
@@ -524,4 +663,35 @@ export async function createRefund(input: CreateRefundInput) {
   });
 
   return { id, paymentId: input.paymentId, amountPaise: input.amountPaise };
+}
+
+// List operations
+export async function listConcessions(schoolId: string, studentId?: string) {
+  const conditions = [eq(concessions.schoolId, schoolId)];
+  if (studentId) conditions.push(eq(concessions.studentId, studentId));
+  return db
+    .select()
+    .from(concessions)
+    .where(and(...conditions))
+    .orderBy(desc(concessions.createdAt));
+}
+
+export async function listCreditNotes(schoolId: string, studentId?: string) {
+  const conditions = [eq(creditNotes.schoolId, schoolId)];
+  if (studentId) conditions.push(eq(creditNotes.studentId, studentId));
+  return db
+    .select()
+    .from(creditNotes)
+    .where(and(...conditions))
+    .orderBy(desc(creditNotes.createdAt));
+}
+
+export async function listRefunds(schoolId: string, paymentId?: string) {
+  const conditions = [eq(refunds.schoolId, schoolId)];
+  if (paymentId) conditions.push(eq(refunds.paymentId, paymentId));
+  return db
+    .select()
+    .from(refunds)
+    .where(and(...conditions))
+    .orderBy(desc(refunds.createdAt));
 }

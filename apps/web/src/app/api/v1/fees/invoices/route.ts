@@ -6,8 +6,8 @@ import { z } from "zod";
 const CreateInvoiceSchema = z.object({
   studentId: z.string().uuid(),
   academicYearId: z.string().uuid(),
-  financialYear: z.string().min(1).max(20),
-  invoiceNumber: z.string().min(1).max(50),
+  financialYear: z.string().min(1).max(20).optional(),
+  /** Never accepted from clients — the school-scoped gapless sequence allocates it. */
   issueDate: z.string().datetime(),
   dueDate: z.string().datetime(),
   status: z.enum(["draft", "issued", "partial", "paid", "overdue", "cancelled"]).optional(),
@@ -58,18 +58,18 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const invoice = await createInvoice({
+    const invoiceInput: Parameters<typeof createInvoice>[0] = {
       schoolId: ctx.schoolId,
       studentId: parsed.data.studentId,
       academicYearId: parsed.data.academicYearId,
-      financialYear: parsed.data.financialYear,
-      invoiceNumber: parsed.data.invoiceNumber,
       issueDate: new Date(parsed.data.issueDate),
       dueDate: new Date(parsed.data.dueDate),
-      status: parsed.data.status ?? "issued",
       invoiceLines: parsed.data.invoiceLines,
       actorId: ctx.userId,
-    });
+    };
+    if (parsed.data.financialYear) invoiceInput.financialYear = parsed.data.financialYear;
+    if (parsed.data.status) invoiceInput.status = parsed.data.status;
+    const invoice = await createInvoice(invoiceInput);
     return NextResponse.json(
       { data: invoice, meta: { request_id: crypto.randomUUID() } },
       { status: 201 },

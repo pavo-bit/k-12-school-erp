@@ -1,5 +1,17 @@
 # Build Log
 
+## 2026-11-17 — Fees ledger made real: gapless sequences, payment application, refunds guard
+
+Critical audit finding: **no code path anywhere updated `invoice.paid_paise`** — the payments leg was hollow; INV-000001's paid state was hand-seeded. Invoice/receipt numbers were caller-supplied and `nextDocumentNumber` was a `not_implemented` stub. All closed:
+
+- `document_sequences` now actually allocates: `nextDocumentNumber(schoolId, documentType, financialYear?)` in @school-erp/db — single atomic `INSERT … ON CONFLICT … DO UPDATE … RETURNING` (no locking needed), preserving the hand-seeded 2026-27 counter state (INV-000002 / RCP-000002 issued by the live system, format `INV-\d{6}` / `RCP-\d{6}` enforced by the invariant suite).
+- `createInvoice` generates the number itself (clients can no longer pass `invoiceNumber`; route rejects it) and refuses non-positive totals. `financialYear` now defaults to the Indian FY (Apr–Mar).
+- `createPaymentAllocation` rewritten as the ledger write path: payment row locked `FOR UPDATE`, validates school ownership both sides, caps by payment's unallocated balance and invoice's outstanding, inserts allocation, and posts `paid_paise` + status (`partial`/`paid`) to the invoice — one tenant transaction, so allocation and invoice state commit or roll back together. Concurrent allocations serialize on the payment row.
+- `createReceipt`: school-scoped payment check, one-receipt-per-payment enforced (409 RECEIPT_EXISTS), number from the sequence (was `REC-<schoolprefix>-<timestamp>` which violated the `^RCP-\d{6}$` invariant).
+- `createRefund`: payment-scoped, positive amount, cumulative-refund guard vs payment total (remaining amount reported) → 409 REFUND_EXCEEDS_PAYMENT; plus new list endpoints for concessions/credit notes/refunds.
+- New API surface: `POST /api/v1/fees/payments/allocate` (auto amount = min(unallocated, outstanding)), `POST /api/v1/fees/receipts`, `GET/POST /api/v1/fees/concessions` (percentage ≤ 100), `GET/POST /api/v1/fees/credit-notes`, `GET/POST /api/v1/fees/refunds`. `mapFeeError` maps domain codes → 409/422.
+- Verified end-to-end against the live server: student TEST001 → invoice INV-000002 (₹2,500, issued) → payment → allocate (invoice → paid, 250000/250000 atomic) → re-allocate → 409 NOTHING_TO_ALLOCATE → receipt RCP-000002 → double receipt 409 → refunds 1,00,000 ✓ / 1,60,000 409 (remaining 1,50,000) / 1,50,000 ✓ → credit note ✓ → concession (50% merit, >100 rejected) ✓ → all list endpoints ✓ → financial-invariants suite still green on real data.
+
 ## 2026-11-17 — Timetable module (periods, rooms, weekly grid) built on the real base schema
 
 Discovered during implementation that `periods` and `timetable_slots` shipped in migration 0000 (attendance.ts schema) with RLS forced — so this was an extension, not greenfield. My first instinct (parallel `timetable_slots`/`timetable_entries` design) clashed and was discarded; audit-first paid off.

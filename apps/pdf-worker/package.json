@@ -11,6 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@school-erp/documents": "workspace:^",
     "fastify": "^5.1.0",
     "zod": "^3.24.1"
   },

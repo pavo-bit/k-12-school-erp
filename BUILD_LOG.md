@@ -1,5 +1,15 @@
 # Build Log
 
+## 2026-11-17 — Report-card PDF generation + pdf-worker implemented (receipts too)
+
+Parents can now receive an actual artifact instead of JSON. End-to-end flow:
+
+- `@school-erp/documents` rebuilt from a stub (deleted `renderReceiptHtml` remnant, removed react/react-dom deps): pure-TS pdfkit renderers for **report cards** (school header, student box, per-subject table with pass/fail/absent status, totals, percentage, grade ring, attendance, signatures, footer, layout verified inside the A4 content box) and **fee receipts** (A5). Unit tests assert valid PDF bytes, single page, and empty-marks tolerance — `pnpm test` now covers document generation (18 turbo test tasks green).
+- `apps/pdf-worker` implemented for real (was a 501 placeholder): `POST /render` with kind `report_card` | `receipt`, zod-validated, streams `application/pdf` with safe filename; bad payloads → 400 VALIDATION_ERROR with field details (verified both paths); `/healthz` ok.
+- Web API: `POST /api/v1/exams/report-cards` assembles the card from live data (exam → examSubjects → marks → school/term/academic year → enrollment class/section → students), grades via the school's `grading_schemes`/`grade_bands` (falls back to A1…E bands), stores the PDF via the storage driver (`LOCAL_STORAGE_PATH`, default `./.local/storage`, gitignored), records a `report_cards` row (`status: generated`, audited), and returns the PDF inline as an attachment. `GET /api/v1/exams/report-cards?studentId=` lists stored cards; `GET /api/v1/exams/report-cards/[id]` re-downloads the stored PDF (school-scoped, 410 when the object is gone).
+- Verified end-to-end against the running prod-mode server: created fixtures via the live API (3 subjects, Term 2, exam, exam subjects, marks for STU001 — 243/300 = 81%), generated the card over HTTP (200, `Content-Disposition` + `X-Report-Card-Id`), confirmed the stored file byte-identical to the download, confirmed single-page layout via content-stream coordinates, and unit-tested both generators. Also removed the `/Count 2` page leak (footer positioned past the bottom margin).
+- Test data lives in dev DB only: Term 2 (2027-28), exam `Class 10 Unit Test 2`, exam subjects for Maths/Science/English, marks for Aarav (STU001). Delete via SQL if unwanted.
+
 ## 2026-11-17 — Request-scoped tenant transactions (RLS is now load-bearing in the request path)
 
 Every API request now runs inside a single tenant-scoped transaction via AsyncLocalStorage:

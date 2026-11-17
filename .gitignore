@@ -65,3 +65,5 @@ infra/terraform/**/override.tf.json
 tmp/
 temp/
 .cache/
+# Local document storage (dev)
+.local/

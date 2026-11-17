@@ -53,6 +53,9 @@
 - Implemented CSV bulk import for students: POST /api/v1/students/import with dry-run validation and row-level error reporting; verified import of 2 students (TEST001, TEST002) and dry-run validation.
 - Implemented CSV bulk export: GET /api/v1/students/export returns admission_number, first_name, last_name, date_of_birth, gender, status; verified export output.
 - Updated students admin page with CSV import/export UI.
+- Implemented console notification driver (local dev): logs email/SMS/WhatsApp/push notifications to stdout; provider adapters (Resend, MSG91, WhatsApp BSP, FCM) replace it in production.
+- Implemented announcement send flow: POST /api/v1/communication/announcements/:id/send delivers via console driver, records a broadcast notification (status delivered), marks announcement as sent with sent_at.
+- Verified: announcement created → send → status "sent" with sent_at, notification record with status "delivered", console log output.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

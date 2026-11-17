@@ -13,6 +13,7 @@
   messageCosts,
 } from "@school-erp/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
+import { sendConsolePush } from "./console-driver";
 import { writeAudit } from "@school-erp/db";
 import { randomUUID } from "node:crypto";
 
@@ -530,4 +531,44 @@ export async function listMessageCosts(schoolId: string, channel?: string, perio
     .from(messageCosts)
     .where(and(...conditions))
     .orderBy(desc(messageCosts.period), desc(messageCosts.createdAt));
+}
+
+// Announcement send operations
+export async function sendAnnouncement(schoolId: string, announcementId: string, actorId: string) {
+  const announcement = await getAnnouncement(announcementId);
+  if (!announcement) {
+    throw new Error("Announcement not found");
+  }
+
+  // Deliver via console driver (local dev; production uses provider adapters)
+  sendConsolePush("all:" + schoolId, announcement.title, announcement.body);
+
+  // Record a broadcast notification
+  const id = randomUUID();
+  await db.insert(notifications).values({
+    id,
+    schoolId,
+    eventKey: "announcement.sent",
+    recipientId: actorId,
+    channel: "push",
+    status: "delivered",
+  });
+
+  // Mark announcement as sent
+  await db
+    .update(announcements)
+    .set({ status: "sent", sentAt: new Date(), updatedAt: new Date() })
+    .where(eq(announcements.id, announcementId));
+
+  await writeAudit({
+    scope: "school",
+    schoolId,
+    actorId,
+    action: "announcement.sent",
+    entityType: "announcement",
+    entityId: announcementId,
+    after: { title: announcement.title },
+  });
+
+  return { id: announcementId, status: "sent" };
 }

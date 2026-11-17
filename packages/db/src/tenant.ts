@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
 import type { Db } from "./client";
+import { runWithTenant } from "./client";
 
 export interface TenantContext {
   schoolId: string;
@@ -9,21 +9,26 @@ export interface TenantContext {
   impersonationId?: string;
 }
 
+/**
+ * @deprecated Prefer runWithTenant from ./client — kept for API compatibility.
+ *
+ * Runs `fn` inside one transaction on a dedicated client with RLS GUCs set from `ctx`.
+ * The `db` argument is ignored: the scoped handle is exported as `db` from ./client
+ * and resolved through AsyncLocalStorage for the duration of the callback.
+ */
 export async function withTenantContext<T>(
-  db: Db,
+  _db: Db,
   ctx: TenantContext,
   fn: (tx: Db) => Promise<T>,
 ): Promise<T> {
-  return db.transaction(async (tx) => {
-    await tx.execute(sql`SELECT set_config('app.current_school_id', ${ctx.schoolId}, true)`);
-    await tx.execute(sql`SELECT set_config('app.current_user_id', ${ctx.userId ?? ""}, true)`);
-    await tx.execute(sql`SELECT set_config('app.current_org_id', ${ctx.orgId ?? ""}, true)`);
-    await tx.execute(
-      sql`SELECT set_config('app.is_platform_admin', ${ctx.isPlatformAdmin ? "true" : "false"}, true)`,
-    );
-    await tx.execute(
-      sql`SELECT set_config('app.impersonation_id', ${ctx.impersonationId ?? ""}, true)`,
-    );
-    return fn(tx as unknown as Db);
-  });
+  return runWithTenant(
+    {
+      schoolId: ctx.schoolId,
+      userId: ctx.userId,
+      orgId: ctx.orgId,
+      isPlatformAdmin: ctx.isPlatformAdmin,
+      impersonationId: ctx.impersonationId,
+    },
+    fn,
+  );
 }

@@ -1,5 +1,18 @@
 # Build Log
 
+## 2026-11-17 — Request-scoped tenant transactions (RLS is now load-bearing in the request path)
+
+Every API request now runs inside a single tenant-scoped transaction via AsyncLocalStorage:
+
+- `packages/db/src/client.ts`: the shared `db` export is a proxy that resolves to a dedicated `PoolClient`-bound drizzle handle while inside `runWithTenant(ctx, fn, pool?)`. GUCs (`app.current_school_id`, `app.current_user_id`, `app.current_org_id`, `app.is_platform_admin`, `app.impersonation_id`) are set at SESSION level (drizzle's nested `db.transaction()` emits its own begin/commit on the same client and would silently drop transaction-local GUCs), and reset + the wrapper restored on completion so pooled connections carry nothing.
+- drizzle's object-form `{text:"begin"}` statements inside a scope are transparently translated to savepoints by a per-scope `client.query` shim; the shim is fully removed when the scope ends (no wrapper stacking on pooled connections).
+- Success → commit, exception → rollback (no partial multi-statement request writes). Services did not use transactions before — invoice+lines, payment+allocations, fee head+audit are now atomic per request.
+- `withApi` (apps/web) wraps every API route handler in `runWithTenant`; auth/session resolution stays pre-scope on the pooled owner connection.
+- Regression suite: `db-scope.test.ts` proves (a) the shared `db` resolves to the scoped connection, (b) greenwood scope sees its rows / foreign scope sees none (as erp_app), (c) handler exception rolls back the whole request, (d) success commits, (e) nested `db.transaction` composes via savepoints and outer abort unwinds everything. 32/32 tests pass.
+- Verified live: prod-mode server rebuild; 18/18 core GET endpoints 200 (unchanged); create → read-back → duplicate-409 write flow works; duplicate-insert rolls back. Error semantics unchanged (normalizeError now maps exceptions thrown mid-handler after rollback instead of committing partial state).
+- Notable: `packages/*/dist` ESM output uses extensionless imports — fine for Next/turbopack/tsx consumers, not directly runnable under raw `node`. Packaging wart documented, not yet fixed.
+- Remaining for production cutover: Better Auth login lookups cannot run under per-user RLS; production must give Better Auth a BYPASSRLS-capable role (or dedicated DB user) and point the web app at erp_app for tenant queries — env-level change now that the mechanism is in place.
+
 ## 2026-11-17 — Security: RLS hardening across all 104 tables; real test suite wired into CI
 
 Audit found 38 of 104 public tables with RLS **disabled entirely** (marks, exams, exam_terms, results, report_cards, outbox_events, users, sessions, audit-relevant identity tables, payment gateway_events, OTP store, notification deliveries/preferences, announcement audiences). Classifying each by data sensitivity and applying migration `0007_rls_hardening`:
@@ -14,18 +27,20 @@ Audit found 38 of 104 public tables with RLS **disabled entirely** (marks, exams
 Verified as erp_app (NO BYPASSRLS): greenwood tenant sees 3 students / bogus tenant 0 / no context 0; otp_challenges & gateway_events permission-denied; plans INSERT denied; users visible only as self; child rows invisible to foreign tenants. Fold FORCE for the three secret tables directly into 0007 (not a side-channel manual fix) so fresh environments converge.
 
 Test infrastructure: `@school-erp/testing` now runs vitest with 27 passing tests —
+
 - `rls-coverage.test.ts`: every public table classified, FORCE enforced, secret tables carry no permissive policy, global-reference read-only — prevents regressions of the hardening.
 - `tenant-isolation.test.ts`: erp_app contract (tenant, user, child-row, secret, read-only global cases); seeded tenant auto-discovered by slug.
 - `financial-invariants.test.ts`: no invoice overpaid, no negative amounts, payments never over-allocated, every `%paise` column bigint/integer (never float), document number formats unique per school.
 
 CI/dev parity fixes:
+
 - New idempotent `packages/db/scripts/bootstrap.ts` + `infra/db/bootstrap.sql` create `erp_app` and `erp_migrations` (roles, grants) — previously created ad hoc, so CI's test job and fresh docker-compose were broken by design (missing roles → migration 0001 fails → zero tests).
 - `docker-compose.yml` now matches reality: db `erp`, erp superuser, roles bootstrap on first init, published on 5435 (matches .env.example).
 - CI test job: bootstrap → migrate → seed → pnpm test (with TEST_DATABASE_URL/TEST_APP_DATABASE_URL). E2E job gets the same bootstrap.
 - Full CI sequence validated locally against a scratch database (`ci_sim`): bootstrap → migrate → seed → 27/27 tests pass; scratch DB dropped afterwards.
 - Root package.json duplicate `lint` key removed (pnpm warning); .env.example documents role + TEST_* variables and the erp_app production posture.
 
-Known gap (unchanged, documented): the web app still connects as the owner role in development and routes do not yet set `app.current_school_id` per request. Production cutover MUST route every request through a request-scoped tenant context (`withTenantContext` in packages/db/src/tenant.ts) — until that lands, erp_app-based production would return zero rows by policy. `BUILD_LOG` tracks this as a release-blocking item.
+Resolved later the same day by the request-scoped tenant-transaction work (see the entry below): the web app now runs every request inside a tenant-scoped transaction, so flipping DATABASE_URL to erp_app for tenant queries is an env-level change. Better Auth login itself still requires a BYPASSRLS-capable role in production (per-user RLS cannot serve email→user lookups).
 
 ## 2026-11-17 — Web build fixed: single React types version workspace-wide
 

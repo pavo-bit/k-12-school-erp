@@ -3,7 +3,7 @@ import { runWithTenant } from "@school-erp/db";
 import { getCookie, getSession } from "./dev-auth";
 import { resolveSchoolId } from "./tenant";
 import { createAuth } from "@school-erp/auth";
-import { db } from "@school-erp/db";
+import { authDb } from "./auth-db";
 import { normalizeError } from "./errors";
 
 export interface ApiContext {
@@ -17,14 +17,14 @@ export async function withApi(
   handler: (ctx: ApiContext) => Promise<Response>,
 ): Promise<Response> {
   // Resolve the caller. Better Auth session wins when present; otherwise dev-auth.
-  // Auth lookups use the pooled owner connection (pre request-scope) — in production
+  // Auth lookups use the pooled owner connection (pre request-scope) â€” in production
   // Better Auth must run on a BYPASSRLS-capable role; tenant-scoped tables are not
   // reachable under per-user RLS for login lookups.
   let userId: string | null = null;
   let role: string | null = null;
 
   try {
-    const auth = createAuth(db, process.env.BETTER_AUTH_URL ?? "http://localhost:3000") as {
+    const auth = createAuth(authDb, process.env.BETTER_AUTH_URL ?? "http://localhost:3000") as {
       api: {
         getSession: (opts: { headers: Headers }) => Promise<{
           user: { id: string; email: string; name: string };
@@ -40,7 +40,7 @@ export async function withApi(
       userId = betterSession.user.id;
     }
   } catch {
-    // Better Auth unavailable/misconfigured — fall back to dev-auth below.
+    // Better Auth unavailable/misconfigured â€” fall back to dev-auth below.
   }
 
   if (!userId) {
@@ -68,14 +68,14 @@ export async function withApi(
   // The entire handler runs inside one tenant-scoped transaction:
   //   - every service query uses the scoped connection (AsyncLocalStorage)
   //   - RLS GUCs (app.current_school_id, app.current_user_id, ...) are set
-  //   - success → commit, exception → rollback (no partial writes)
+  //   - success â†’ commit, exception â†’ rollback (no partial writes)
   try {
     return await runWithTenant(
       { schoolId, userId, isPlatformAdmin: role === "platform_admin" },
       () => handler(ctx),
     );
   } catch (error) {
-    // Handler threw → transaction already rolled back by runWithTenant.
+    // Handler threw â†’ transaction already rolled back by runWithTenant.
     const normalized = normalizeError(error);
     console.error(error);
     return NextResponse.json(

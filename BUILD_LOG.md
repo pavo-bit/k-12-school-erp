@@ -1,5 +1,16 @@
 # Build Log
 
+## 2026-11-17 — Production role split: erp_app (RLS) + erp_auth (BYPASSRLS), fully verified
+
+The production cutover blocker is resolved: the app can now run entirely as the RLS-enforcing role, with auth on a BYPASSRLS connection.
+
+- New `erp_auth` role (BYPASSRLS): created by `packages/db/scripts/bootstrap.ts` and `infra/db/bootstrap.sql` (idempotent), granted CRUD on existing + future tables/sequences. `erp_app` remains NOSUPERUSER/NOBYPASSRLS; `erp_migrations` DDL-only.
+- `@school-erp/db` exports `createStandaloneDb(url)` — an independent pool+drizzle handle (3 connections) so auth queries do not depend on the tenant context they help establish.
+- Web layer: new `src/server/auth-db.ts` exports `authDb` = `createStandaloneDb(process.env.AUTH_DATABASE_URL) ?? db`. All auth/session/slug-resolution queries moved to it: `dev-auth.ts` (verifyPassword, createSession, getSession, deleteSession), `tenant.ts` (resolveSchoolId — schools_access policy requires context, so slug→id cannot run as erp_app pre-scope), and Better Auth in `withApi`.
+- Verified the complete production posture locally with `DATABASE_URL=postgres://erp_app:erp_app@localhost:5435/erp`, `AUTH_DATABASE_URL=postgres://erp_auth:erp_auth@localhost:5435/erp`, `APP_ENV=production`: login (argon2 via erp_auth) → /me (correct user/role/school) → 20/20 core endpoints 200 → student list returns real tenant rows under RLS → fee-head INSERT 201 (policy WITH CHECK passes) → duplicate 409 (rolls back) → bogus tenant slug → 400 TENANT_REQUIRED. Default dev posture (owner role) re-verified unchanged. Verification rows cleaned up.
+- `.env.example` documents the two variables and role semantics; local default stays owner for DX. Production deployment = set both env vars to the erp_app/erp_auth roles; no code changes.
+- Still open (documented): Better Auth itself is configured but not exercising password verification (dev-auth does); a full Better Auth migration of login/session semantics (model mapping, hash migration) remains future work — this split is the enabler, not the migration.
+
 ## 2026-11-17 — Report-card PDF generation + pdf-worker implemented (receipts too)
 
 Parents can now receive an actual artifact instead of JSON. End-to-end flow:

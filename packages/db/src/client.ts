@@ -14,6 +14,26 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5_000,
 });
 
+/**
+ * Creates an independent connection pool + drizzle handle for auth/session
+ * and tenant-resolution queries. Production points DATABASE_URL at erp_app
+ * (RLS-enforcing) and AUTH_DATABASE_URL at erp_auth (BYPASSRLS) — authentication
+ * must not depend on the tenant context it is helping to establish.
+ *
+ * Returns null when no connection string is given (callers fall back to the
+ * shared default pool).
+ */
+export function createStandaloneDb(connectionString?: string): Db | null {
+  if (!connectionString) return null;
+  const standalonePool = new Pool({
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
+  });
+  return drizzle(standalonePool, { schema });
+}
+
 export type Db = NodePgDatabase<typeof schema>;
 
 const defaultDb: Db = drizzle(pool, { schema });

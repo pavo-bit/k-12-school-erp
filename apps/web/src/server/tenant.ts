@@ -1,4 +1,5 @@
-import { db, schools } from "@school-erp/db";
+import { authDb as db } from "./auth-db";
+import { schools } from "@school-erp/db";
 import { eq } from "drizzle-orm";
 
 export function resolveSchoolSlug(request: Request): string {

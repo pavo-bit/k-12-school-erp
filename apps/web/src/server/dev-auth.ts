@@ -1,5 +1,6 @@
 import argon2 from "argon2";
-import { db, users, accounts, sessions, memberships, roles } from "@school-erp/db";
+import { users, accounts, sessions, memberships, roles } from "@school-erp/db";
+import { authDb as db } from "./auth-db";
 import { eq, and } from "drizzle-orm";
 
 export async function verifyPassword(email: string, password: string): Promise<string | null> {

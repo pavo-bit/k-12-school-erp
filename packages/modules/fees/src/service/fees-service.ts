@@ -373,6 +373,29 @@ export interface CreatePaymentInput {
 }
 
 export async function createPayment(input: CreatePaymentInput) {
+  // Idempotent retry path: return the existing payment for a repeated key.
+  if (input.idempotencyKey) {
+    const existing = await db
+      .select()
+      .from(payments)
+      .where(
+        and(
+          eq(payments.schoolId, input.schoolId),
+          eq(payments.idempotencyKey, input.idempotencyKey),
+        ),
+      )
+      .limit(1);
+    if (existing[0]) {
+      return {
+        id: existing[0].id,
+        studentId: existing[0].studentId,
+        amountPaise: existing[0].amountPaise,
+        status: existing[0].status,
+        duplicate: true,
+      };
+    }
+  }
+
   const id = randomUUID();
   const receivedAt = input.receivedAt ?? new Date();
 

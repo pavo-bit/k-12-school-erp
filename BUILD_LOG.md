@@ -1,5 +1,12 @@
 # Build Log
 
+## 2026-11-18 — Payment creation is now idempotent (retries can't double-count)
+
+- `0009_payment_idempotency.sql`: partial unique index `payments_school_idempotency_key_uq (school_id, idempotency_key) WHERE idempotency_key IS NOT NULL` — NULLs (unspecified/gateway payments) exempt.
+- `createPayment` now does find-or-create per (school, key): replay returns the existing payment with `duplicate: true` (sequential case) — the unique index is the concurrent-race backstop (loses with 23505 → 409).
+- `POST /api/v1/fees/payments` accepts optional `idempotencyKey` (min 8 chars) and returns `201` on create, `200` + `duplicate: true` on replay. Verified live: first POST 201 `63b00f92…`, retry 200 same id `duplicate: true`; exactly one row in payments; unique index confirmed via pg_indexes. The seeded invoice (fully paid) rejects a further allocation with 409 NOTHING_TO_ALLOCATE. Idempotency test row deleted after verification.
+- NOTE: the journal repair this round confirms the CI `test`/`smoke` jobs (which run `pnpm db:migrate` from scratch) would catch a corrupt `_journal.json` immediately.
+
 ## 2026-11-18 — CI: e2e job (guaranteed-red, no playwright, no specs) replaced with a truthful smoke job
 
 The `e2e` job in ci.yml could never pass: it ran `pnpm test:e2e` → `playwright test`, but Playwright is not a dependency, there is no config, and zero spec files exist. Replaced with a `smoke` job that rehearses the exact production path on every run: postgres service → `bootstrap` (erp_app/erp_auth/erp_migrations) → `migrate` → `seed` → `build` → boot `next start` → assert `/healthz` 200, `/login` 200, and `/api/v1/auth/login` + `/api/v1/me` + `/api/v1/students` all return real data for the seeded Greenwood admin. YAML validated (js-yaml), and the identical sequence was rehearsed locally against a scratch database (created → bootstrap → migrate → seed → prod server → all HTTP checks pass → dropped afterwards). CI jobs are now: lint, typecheck, test, build, smoke.

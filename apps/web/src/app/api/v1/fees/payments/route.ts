@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { createPayment } from "@school-erp/fees";
-import { listPayments } from "@school-erp/fees";
+import { createPayment, listPayments } from "@school-erp/fees";
 import { z } from "zod";
 
 const RecordPaymentSchema = z.object({
@@ -9,6 +8,8 @@ const RecordPaymentSchema = z.object({
   invoiceId: z.string().uuid(),
   amountPaise: z.number().int().positive(),
   mode: z.enum(["cash", "cheque", "dd", "upi", "card", "netbanking", "bank_transfer"]),
+  /** Client-supplied idempotency key (safe retry). Unique per school. */
+  idempotencyKey: z.string().min(8).max(200).optional(),
 });
 
 export async function GET(request: Request) {
@@ -45,17 +46,20 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const result = await createPayment({
+    const paymentInput: Parameters<typeof createPayment>[0] = {
       schoolId: ctx.schoolId,
       studentId: parsed.data.studentId,
       amountPaise: parsed.data.amountPaise,
       mode: parsed.data.mode,
       status: "completed",
       actorId: ctx.userId,
-    });
+    };
+    if (parsed.data.idempotencyKey) paymentInput.idempotencyKey = parsed.data.idempotencyKey;
+    const result = await createPayment(paymentInput);
+    const duplicate = "duplicate" in result && result.duplicate === true;
     return NextResponse.json(
       { data: result, meta: { request_id: crypto.randomUUID() } },
-      { status: 201 },
+      { status: duplicate ? 200 : 201 },
     );
   });
 }

@@ -68,12 +68,21 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - name: Bootstrap runtime roles (erp_app, erp_migrations)
+        run: pnpm --filter @school-erp/db bootstrap
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_test
       - run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_test
+      - run: pnpm db:seed
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_test
       - run: pnpm test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_test
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_test
+          TEST_APP_DATABASE_URL: postgresql://erp_app:erp_app@localhost:5432/school_erp_test
           NODE_ENV: test
 
   build:
@@ -125,6 +134,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @school-erp/db bootstrap
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/school_erp_e2e
       - run: npx playwright install --with-deps
       - run: pnpm db:migrate
         env:

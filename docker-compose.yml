@@ -4,13 +4,14 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: school_erp
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infra/db/bootstrap.sql:/docker-entrypoint-initdb.d/000_roles.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -31,7 +32,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/school_erp
+      DATABASE_URL: postgres://erp:erp@postgres:5432/erp
       NODE_ENV: development
       BETTER_AUTH_URL: http://localhost:3000
     depends_on:
@@ -47,7 +48,7 @@ services:
       context: .
       dockerfile: apps/worker/Dockerfile
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/school_erp
+      DATABASE_URL: postgres://erp:erp@postgres:5432/erp
       NODE_ENV: development
     depends_on:
       postgres:

@@ -8,15 +8,19 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:integration": "vitest run"
   },
   "dependencies": {
     "@school-erp/core": "workspace:*",
     "@school-erp/db": "workspace:*",
-    "drizzle-orm": "^0.36.4"
+    "drizzle-orm": "^0.36.4",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
     "typescript": "^5.6.3",
     "vitest": "^2.1.0"
   }

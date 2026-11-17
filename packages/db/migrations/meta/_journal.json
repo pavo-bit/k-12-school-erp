@@ -50,6 +50,13 @@
       "when": 1794930182545,
       "tag": "0006_burly_redwing",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794932748447,
+      "tag": "0007_rls_hardening",
+      "breakpoints": true
     }
   ]
 }

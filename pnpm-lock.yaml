@@ -571,10 +571,16 @@ importers:
       drizzle-orm:
         specifier: ^0.36.4
         version: 0.36.4(@types/pg@8.23.1)(@types/react@19.3.0)(kysely@0.29.9)(pg@8.23.1)(react@19.3.1)
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.1
     devDependencies:
       "@types/node":
         specifier: ^22.10.0
         version: 22.20.5
+      "@types/pg":
+        specifier: ^8.11.10
+        version: 8.23.1
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
@@ -2931,7 +2937,7 @@ packages:
       {
         integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==,
       }
-    engines: { node: ">=0.10.0" }
+    engines: { "0": node >=0.10.0 }
 
   "@expo/cli@0.22.28":
     resolution:

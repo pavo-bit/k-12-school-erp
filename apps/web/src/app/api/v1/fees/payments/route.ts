@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
 import { createPayment } from "@school-erp/fees";
+import { listPayments } from "@school-erp/fees";
 import { z } from "zod";
 
 const RecordPaymentSchema = z.object({
@@ -9,6 +10,20 @@ const RecordPaymentSchema = z.object({
   amountPaise: z.number().int().positive(),
   mode: z.enum(["cash", "cheque", "dd", "upi", "card", "netbanking", "bank_transfer"]),
 });
+
+export async function GET(request: Request) {
+  return withApi(request, async (ctx) => {
+    if (!ctx.schoolId)
+      return NextResponse.json(
+        { error: { code: "TENANT_REQUIRED", message: "School context required." } },
+        { status: 400 },
+      );
+    const url = new URL(request.url);
+    const studentId = url.searchParams.get("studentId") ?? undefined;
+    const payments = await listPayments(ctx.schoolId, studentId);
+    return NextResponse.json({ data: payments, meta: { request_id: crypto.randomUUID() } });
+  });
+}
 
 export async function POST(request: Request) {
   return withApi(request, async (ctx) => {

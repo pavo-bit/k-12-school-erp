@@ -56,6 +56,8 @@
 - Implemented console notification driver (local dev): logs email/SMS/WhatsApp/push notifications to stdout; provider adapters (Resend, MSG91, WhatsApp BSP, FCM) replace it in production.
 - Implemented announcement send flow: POST /api/v1/communication/announcements/:id/send delivers via console driver, records a broadcast notification (status delivered), marks announcement as sent with sent_at.
 - Verified: announcement created → send → status "sent" with sent_at, notification record with status "delivered", console log output.
+- Re-added missing admissions routes: GET/POST /api/v1/admissions/enquiries, GET/POST/PATCH /api/v1/admissions/applications; added GET /api/v1/fees/payments.
+- Verified all 16 core GET endpoints return 200; verified enquiry → application creation flow end-to-end.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

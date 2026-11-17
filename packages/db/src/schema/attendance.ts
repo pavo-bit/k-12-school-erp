@@ -29,18 +29,29 @@ export const periods = pgTable("periods", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const timetableSlots = pgTable("timetable_slots", {
-  id: uuid("id").primaryKey(),
-  schoolId: uuid("school_id").notNull(),
-  sectionId: uuid("section_id").notNull(),
-  dayOfWeek: integer("day_of_week").notNull(),
-  periodId: uuid("period_id").notNull(),
-  subjectId: uuid("subject_id").notNull(),
-  teacherId: uuid("teacher_id").notNull(),
-  room: text("room"),
-  effectiveFrom: date("effective_from").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const timetableSlots = pgTable(
+  "timetable_slots",
+  {
+    id: uuid("id").primaryKey(),
+    schoolId: uuid("school_id").notNull(),
+    sectionId: uuid("section_id").notNull(),
+    dayOfWeek: integer("day_of_week").notNull(),
+    periodId: uuid("period_id").notNull(),
+    subjectId: uuid("subject_id").notNull(),
+    teacherId: uuid("teacher_id").notNull(),
+    room: text("room"),
+    roomId: uuid("room_id"),
+    effectiveFrom: date("effective_from").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    // One subject per section per period; no teacher double-booked, no room double-booked.
+    uniqueSectionDayPeriod: unique().on(t.schoolId, t.sectionId, t.dayOfWeek, t.periodId),
+    uniqueTeacherDayPeriod: unique().on(t.schoolId, t.teacherId, t.dayOfWeek, t.periodId),
+    // NULLs are distinct in Postgres unique indexes — free-text/unset rooms stay allowed.
+    uniqueRoomDayPeriod: unique().on(t.schoolId, t.roomId, t.dayOfWeek, t.periodId),
+  }),
+);
 
 export const attendanceSessions = pgTable(
   "attendance_sessions",

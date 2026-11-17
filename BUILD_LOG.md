@@ -1,5 +1,14 @@
 # Build Log
 
+## 2026-11-17 — Timetable module (periods, rooms, weekly grid) built on the real base schema
+
+Discovered during implementation that `periods` and `timetable_slots` shipped in migration 0000 (attendance.ts schema) with RLS forced — so this was an extension, not greenfield. My first instinct (parallel `timetable_slots`/`timetable_entries` design) clashed and was discarded; audit-first paid off.
+
+- `0008_colorful_firestar.sql`: new `rooms` table (school-scoped, unique school+name, RLS forced + tenant policy in-band); `timetable_slots` additively gains `room_id` + three unique constraints (section×day×period, teacher×day×period, room×day×period — NULLs distinct so unset rooms stay legal). Existing data untouched.
+- New module `@school-erp/timetable`: periods (create/list), rooms (create/list), entries (set/list/delete). `setEntry` validates all references belong to the school (section/subject/teacher/room/period), enforces SECTION_SLOT_TAKEN / TEACHER_DOUBLE_BOOKED / ROOM_DOUBLE_BOOKED with 409 + code, and audits. `listEntries` (sectionId|teacherId) assembles the full grid DTO: subject name/code, teacher name (users via staff.userId, falls back to employeeCode), period times ordered by `order`, room name (room FK or free-text legacy).
+- API: `GET/POST /api/v1/timetable/periods`, `GET/POST /api/v1/timetable/rooms`, `GET/POST/DELETE /api/v1/timetable/entries` (409 on conflicts, 404 on delete-repeat — verified live). Dev data: 3 periods, Science Lab room, Monday P1 Maths for Class 10-A, EMP002 staff member.
+- The RLS coverage guard in `packages/testing` automatically enforces the new `rooms` table (FORCE + policy present) — no test changes needed. 19 turbo test tasks green; 32/32 pass.
+
 ## 2026-11-17 — Production role split: erp_app (RLS) + erp_auth (BYPASSRLS), fully verified
 
 The production cutover blocker is resolved: the app can now run entirely as the RLS-enforcing role, with auth on a BYPASSRLS connection.

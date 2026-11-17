@@ -13,3 +13,5 @@ export * from "./communication";
 export * from "./exams";
 export * from "./admissions";
 export * from "./reports";
+
+export * from "./timetable";

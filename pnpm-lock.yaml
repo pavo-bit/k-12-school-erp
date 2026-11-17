@@ -98,6 +98,9 @@ importers:
       "@school-erp/storage":
         specifier: workspace:^
         version: link:../../packages/storage
+      "@school-erp/timetable":
+        specifier: workspace:^
+        version: link:../../packages/modules/timetable
       "@tailwindcss/postcss":
         specifier: ^4
         version: 4.3.5
@@ -539,6 +542,28 @@ importers:
       "@school-erp/db":
         specifier: workspace:*
         version: link:../../db
+    devDependencies:
+      "@types/node":
+        specifier: ^22.10.0
+        version: 22.20.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  packages/modules/timetable:
+    dependencies:
+      "@school-erp/core":
+        specifier: workspace:*
+        version: link:../../core
+      "@school-erp/db":
+        specifier: workspace:*
+        version: link:../../db
+      drizzle-orm:
+        specifier: ^0.36.4
+        version: 0.36.4(@types/pg@8.23.1)(@types/react@19.3.0)(kysely@0.29.9)(pg@8.23.1)(react@19.3.1)
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
     devDependencies:
       "@types/node":
         specifier: ^22.10.0
@@ -2943,7 +2968,7 @@ packages:
       {
         integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==,
       }
-    engines: { "0": node >=0.10.0 }
+    engines: { node: ">=0.10.0" }
 
   "@expo/cli@0.22.28":
     resolution:

@@ -25,6 +25,7 @@
     "@school-erp/reports": "workspace:*",
     "@school-erp/sis": "workspace:*",
     "@school-erp/storage": "workspace:^",
+    "@school-erp/timetable": "workspace:^",
     "@tailwindcss/postcss": "^4",
     "argon2": "^0.45.2",
     "autoprefixer": "^10.6.2",

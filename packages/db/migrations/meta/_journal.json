@@ -57,6 +57,13 @@
       "when": 1794932748447,
       "tag": "0007_rls_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794937505592,
+      "tag": "0008_colorful_firestar",
+      "breakpoints": true
     }
   ]
 }

@@ -16,6 +16,9 @@ export default function HomeScreen() {
         <Pressable style={styles.action} onPress={() => router.push("/(app)/students")}>
           <Text style={styles.actionText}>View students</Text>
         </Pressable>
+        <Pressable style={styles.action} onPress={() => router.push("/(app)/attendance")}>
+          <Text style={styles.actionText}>Mark attendance</Text>
+        </Pressable>
         <Pressable style={styles.action} onPress={() => router.push("/(app)/fees")}>
           <Text style={styles.actionText}>View fee invoices</Text>
         </Pressable>

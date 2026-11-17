@@ -12,6 +12,7 @@ const MarkSchema = z.object({
     }),
   ),
   submit: z.boolean().default(false),
+  source: z.enum(["web", "mobile"]).default("web"),
 });
 
 export async function GET(request: Request) {
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       sessionId: parsed.data.sessionId,
       records: parsed.data.records,
       actorId: ctx.userId,
+      source: parsed.data.source,
     });
     if (parsed.data.submit) {
       // submit handled separately

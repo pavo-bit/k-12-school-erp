@@ -1,5 +1,13 @@
 # Build Log
 
+## 2026-11-18 — Teacher attendance in the mobile app + roster API
+
+- New endpoint gap closed: `GET /api/v1/students?sectionId=` returns the section roster (enrollments ⨝ active students) — previously there was no way to know who belongs to a section. Also added `POST/GET /api/v1/academics/enrollments` (createEnrollment/listEnrollments service existed but was unreachable over HTTP).
+- Mobile: new `attendance.tsx` screen — section chips → today's session (create one in-app if missing via `POST /attendance/sessions`) → full roster with P/A/L/H toggle per student → Save (bulk `POST /attendance/records`, `submit: true, source: "mobile"`). Home gains a "Mark attendance" quick action; app navigator registers the screen. Mobile typecheck + lint green.
+- Backend records flow tightened: `markAttendance` now accepts `source: "web" | "mobile"` (last-write wins, including the upsert path); route honors a `source` field; staff attendance source threaded the same way.
+- Verified end-to-end over HTTP: sections → create session for today → roster (3 students) → mark records → read back → re-mark with `source: "mobile"` (STU001 recorded as mobile). Enrolled STU001/TEST001/TEST002 into Class 10-A roll 1–3 as dev data.
+- NOT device-tested — verified at the API/type level only. The offline (draft-then-sync) path does not exist yet: saves while offline are out of scope until the Expo SQLite layer lands.
+
 ## 2026-11-18 — Payment creation is now idempotent (retries can't double-count)
 
 - `0009_payment_idempotency.sql`: partial unique index `payments_school_idempotency_key_uq (school_id, idempotency_key) WHERE idempotency_key IS NOT NULL` — NULLs (unspecified/gateway payments) exempt.

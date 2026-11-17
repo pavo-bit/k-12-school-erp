@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withApi } from "@/server/with-api";
-import { createStudent, listStudents } from "@school-erp/sis";
+import { createStudent, listStudents, listStudentsBySection } from "@school-erp/sis";
 import { z } from "zod";
 
 const CreateStudentSchema = z.object({
@@ -21,7 +21,10 @@ export async function GET(request: Request) {
     }
     const url = new URL(request.url);
     const search = url.searchParams.get("q") ?? undefined;
-    const students = await listStudents(ctx.schoolId, search);
+    const sectionId = url.searchParams.get("sectionId") ?? undefined;
+    const students = sectionId
+      ? await listStudentsBySection(ctx.schoolId, sectionId)
+      : await listStudents(ctx.schoolId, search);
     return NextResponse.json({ data: students, meta: { request_id: crypto.randomUUID() } });
   });
 }

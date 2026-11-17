@@ -1,4 +1,4 @@
-﻿import {
+import {
   db,
   attendanceSessions,
   attendanceRecords,
@@ -51,6 +51,8 @@ export interface MarkAttendanceInput {
   sessionId: string;
   records: { studentId: string; status: string }[];
   actorId: string;
+  /** Channel that recorded the marks — "web" (default) or "mobile". */
+  source?: "web" | "mobile";
 }
 
 export async function markAttendance(input: MarkAttendanceInput) {
@@ -66,7 +68,7 @@ export async function markAttendance(input: MarkAttendanceInput) {
           status: r.status,
           markedBy: input.actorId,
           markedAt: new Date(),
-          source: "web",
+          source: input.source ?? "web",
         },
       ])
       .onConflictDoUpdate({
@@ -76,6 +78,7 @@ export async function markAttendance(input: MarkAttendanceInput) {
           markedBy: input.actorId,
           markedAt: new Date(),
           updatedAt: new Date(),
+          source: input.source ?? "web",
         },
       });
   }
@@ -116,6 +119,7 @@ export async function createStaffAttendance(
   staffId: string,
   date: string,
   status: string,
+  source: "web" | "mobile" = "web",
 ) {
   const id = randomUUID();
   await db.insert(staffAttendance).values([
@@ -125,7 +129,7 @@ export async function createStaffAttendance(
       staffId,
       date,
       status,
-      source: "web",
+      source,
     },
   ]);
   return { id, staffId, date, status };

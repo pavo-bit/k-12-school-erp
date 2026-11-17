@@ -75,5 +75,46 @@ export const api = {
         status: string;
       }>
     >("/api/v1/fees/invoices?school=greenwood"),
+  sections: () =>
+    request<Array<{ id: string; name: string; classId: string }>>(
+      "/api/v1/academics/sections?school=greenwood",
+    ),
+  sessions: (sectionId?: string, date?: string) =>
+    request<
+      Array<{
+        id: string;
+        sectionId: string;
+        date: string;
+        sessionType: string;
+        status: string;
+      }>
+    >(
+      `/api/v1/attendance/sessions?school=greenwood${sectionId ? `&sectionId=${sectionId}` : ""}${
+        date ? `&date=${date}` : ""
+      }`,
+    ),
+  createSession: (sectionId: string, date: string) =>
+    request<{ id: string; sectionId: string; date: string; sessionType: string; status: string }>(
+      "/api/v1/attendance/sessions",
+      { method: "POST", body: { sectionId, date, sessionType: "daily" } },
+    ),
+  roster: (sectionId: string) =>
+    request<
+      Array<{
+        id: string;
+        admissionNumber: string;
+        firstName: string;
+        lastName: string;
+        gender: string;
+      }>
+    >(`/api/v1/students?school=greenwood&sectionId=${sectionId}`),
+  markRoster: (
+    sessionId: string,
+    records: Array<{ studentId: string; status: "present" | "absent" | "late" | "half_day" }>,
+  ) =>
+    request<{ sessionId: string; count: number }>("/api/v1/attendance/records", {
+      method: "POST",
+      body: { sessionId, records, submit: true, source: "mobile" },
+    }),
   logout: () => request<{ ok: boolean }>("/api/v1/auth/logout", { method: "POST" }),
 };

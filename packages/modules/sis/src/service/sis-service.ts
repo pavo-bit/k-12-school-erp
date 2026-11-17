@@ -62,6 +62,22 @@ export async function listStudents(schoolId: string, search?: string) {
   return rows;
 }
 
+export async function listStudentsBySection(schoolId: string, sectionId: string) {
+  const rows = await db
+    .select({ student: students })
+    .from(enrollments)
+    .innerJoin(students, eq(students.id, enrollments.studentId))
+    .where(
+      and(
+        eq(enrollments.schoolId, schoolId),
+        eq(enrollments.sectionId, sectionId),
+        eq(enrollments.status, "active"),
+        eq(students.status, "active"),
+      ),
+    );
+  return rows.map((r) => r.student);
+}
+
 export async function getStudent(schoolId: string, studentId: string) {
   const rows = await db
     .select()

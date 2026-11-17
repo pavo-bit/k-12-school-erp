@@ -6,6 +6,7 @@ export default function AppLayout() {
       <Stack.Screen name="index" options={{ title: "Home" }} />
       <Stack.Screen name="students" options={{ title: "Students" }} />
       <Stack.Screen name="fees" options={{ title: "Fees" }} />
+      <Stack.Screen name="attendance" options={{ title: "Attendance" }} />
     </Stack>
   );
 }

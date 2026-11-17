@@ -7,6 +7,7 @@ export {
   createEnrollment,
   listEnrollments,
 } from "./service/sis-service";
+export { importStudents, exportStudentsCsv } from "./service/csv-import";
 export type {
   CreateStudentInput,
   CreateGuardianInput,

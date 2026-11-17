@@ -50,6 +50,9 @@
 - Reports API routes: POST /api/v1/reports/summary (compute), GET /api/v1/reports/summaries (list), POST/GET /api/v1/reports/scheduled, POST/GET /api/v1/reports/jobs.
 - Verified: fee summary for 2026-11-14 shows collectedPaise=500000 (₹5,000), outstandingPaise=0 — matches invoice INV-000001 paid in full.
 - Added /reports admin UI page to the dashboard sidebar.
+- Implemented CSV bulk import for students: POST /api/v1/students/import with dry-run validation and row-level error reporting; verified import of 2 students (TEST001, TEST002) and dry-run validation.
+- Implemented CSV bulk export: GET /api/v1/students/export returns admission_number, first_name, last_name, date_of_birth, gender, status; verified export output.
+- Updated students admin page with CSV import/export UI.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

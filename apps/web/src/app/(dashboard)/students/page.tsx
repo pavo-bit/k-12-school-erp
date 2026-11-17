@@ -22,6 +22,8 @@ export default function StudentsPage() {
     dateOfBirth: "2014-06-01",
   });
   const [message, setMessage] = useState("");
+  const [csvText, setCsvText] = useState("");
+  const [importResult, setImportResult] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -115,6 +117,72 @@ export default function StudentsPage() {
           Add
         </button>
       </form>
+      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900">Bulk import (CSV)</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          Columns: admission_number,first_name,last_name,date_of_birth,gender. Date as YYYY-MM-DD.
+        </p>
+        <textarea
+          rows={4}
+          placeholder={
+            "admission_number,first_name,last_name,date_of_birth,gender\nSTU001,Aarav,Sharma,2014-06-01,male"
+          }
+          value={csvText}
+          onChange={(e) => setCsvText(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs"
+        />
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await fetch("/api/v1/students/import", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ csv: csvText, dryRun: true }),
+              });
+              const body = await res.json().catch(() => null);
+              setImportResult(
+                body?.data ? JSON.stringify(body.data) : (body?.error?.message ?? "Import failed"),
+              );
+            }}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Validate
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await fetch("/api/v1/students/import", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ csv: csvText, dryRun: false }),
+              });
+              const body = await res.json().catch(() => null);
+              setImportResult(
+                body?.data ? JSON.stringify(body.data) : (body?.error?.message ?? "Import failed"),
+              );
+              load();
+            }}
+            className="rounded-lg bg-[var(--brand)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]"
+          >
+            Import
+          </button>
+          <a
+            href="/api/v1/students/export?school=greenwood"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Export CSV
+          </a>
+        </div>
+        {importResult && (
+          <pre className="mt-2 overflow-auto rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
+            {importResult}
+          </pre>
+        )}
+      </div>
+
       {message && <p className="mt-2 text-sm text-slate-600">{message}</p>}
 
       <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

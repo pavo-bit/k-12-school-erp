@@ -198,17 +198,15 @@ export async function createReportRequest(input: {
   requestedBy: string;
 }) {
   const id = randomUUID();
-  await db
-    .insert(reportJobs)
-    .values([
-      {
-        id,
-        schoolId: input.schoolId,
-        reportType: input.reportType,
-        status: "pending",
-        requestedBy: input.requestedBy,
-      },
-    ]);
+  await db.insert(reportJobs).values([
+    {
+      id,
+      schoolId: input.schoolId,
+      reportType: input.reportType,
+      status: "pending",
+      requestedBy: input.requestedBy,
+    },
+  ]);
   return { id, reportType: input.reportType, status: "pending" };
 }
 

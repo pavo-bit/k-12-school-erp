@@ -3,6 +3,7 @@ import { getCookie, getSession } from "./dev-auth";
 import { resolveSchoolId } from "./tenant";
 import { createAuth } from "@school-erp/auth";
 import { db } from "@school-erp/db";
+import { normalizeError } from "./errors";
 
 export interface ApiContext {
   userId: string;
@@ -33,10 +34,11 @@ export async function withApi(
       try {
         return await handler({ userId: betterSession.user.id, schoolId, role: null });
       } catch (error) {
+        const normalized = normalizeError(error);
         console.error(error);
         return NextResponse.json(
-          { error: { code: "INTERNAL_ERROR", message: "Unexpected error." } },
-          { status: 500 },
+          { error: { code: normalized.code, message: normalized.message } },
+          { status: normalized.status },
         );
       }
     }
@@ -64,10 +66,11 @@ export async function withApi(
   try {
     return await handler({ userId: session.user.id, schoolId, role });
   } catch (error) {
+    const normalized = normalizeError(error);
     console.error(error);
     return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Unexpected error." } },
-      { status: 500 },
+      { error: { code: normalized.code, message: normalized.message } },
+      { status: normalized.status },
     );
   }
 }

@@ -42,6 +42,7 @@
 - Verified HR staff creation, announcement creation, enquiry creation.
 - All modules pass typecheck, lint, build, and format checks.
 - Fixed critical Edge runtime middleware crash (removed pg/db import from middleware; moved tenant resolution to Node runtime via withApi).
+- Fixed production error handling: added normalized error mapping (Postgres 23505 → 409 DUPLICATE_RECORD, 23503 → 422 REFERENCE_NOT_FOUND, etc.) instead of returning 500 for constraint violations.
 - Deleted dead code (tenant-context, tenant-middleware, better-auth-middleware, cache, error-handler) with duplicate logic.
 - Built admin web UI: login (client-side fetch), dashboard shell with sidebar (Students, Attendance, Fees, Dashboard), Students list/add, Attendance session creation, Fees invoices list.
 - Removed auto-generated test files with type errors; proper tests to be added later.

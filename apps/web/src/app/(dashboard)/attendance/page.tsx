@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 interface Session {
   id: string;
@@ -35,7 +35,7 @@ export default function AttendancePage() {
     load();
   }, []);
 
-  async function createSession(e: React.FormEvent) {
+  async function createSession(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage("");
     const res = await fetch("/api/v1/attendance/sessions", {

@@ -1,5 +1,12 @@
 # Build Log
 
+## 2026-11-17 — Web build fixed: single React types version workspace-wide
+
+- Root-caused the recurring Next.js build failure (TS2742: "inferred type … reference to '.pnpm/@types+react@18.3.31' … not portable"). pnpm's public hoist exported @types/react@18.3.31 (mobile's ~18.3.12 range), and Next.js d.ts files resolve react types through that hoist, while web compiles against @types/react@19.3.0. Two copies of react types in one program; the global JSX namespace (removed in React 19 types) leaked from 18.3.31 into route-component inference. This is why `tsc --noEmit` passed (cache) but `next build` failed deterministically once `.next/types` forced a fresh check.
+- Fix: aligned mobile to `@types/react@^19.0.0` (mobile typecheck passes against React 18.3.1 runtime; RN 0.76 types are compatible). Public hoist now serves 19.3.0 everywhere; verified zero 18.x copies in the web program via `tsc --listFilesOnly`.
+- Verification: clean `.next` rebuild; root `pnpm typecheck` (38/38), `pnpm lint`, `pnpm build`, `pnpm format:check` all pass.
+- Guard note: implicit reliance on the typecheck cache no longer hides this class of error. If the hoist ever regresses, annotate web route components with `ReactElement` imported from "react".
+
 ## 2026-11-14 — Milestone 0: Scaffold
 
 - Created monorepo (pnpm + Turborepo), apps (web, worker, pdf-worker), packages, mobile, infra.

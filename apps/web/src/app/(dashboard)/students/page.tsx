@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 interface Student {
   id: string;
@@ -42,7 +42,7 @@ export default function StudentsPage() {
     load();
   }, []);
 
-  async function onAdd(e: React.FormEvent) {
+  async function onAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage("");
     const res = await fetch("/api/v1/students", {

@@ -46,6 +46,10 @@
 - Deleted dead code (tenant-context, tenant-middleware, better-auth-middleware, cache, error-handler) with duplicate logic.
 - Built admin web UI: login (client-side fetch), dashboard shell with sidebar (Students, Attendance, Fees, Dashboard), Students list/add, Attendance session creation, Fees invoices list.
 - Removed auto-generated test files with type errors; proper tests to be added later.
+- Implemented reports module: daily attendance summary computation (present/absent counts), daily fee summary (collected/outstanding), rebuildable from operational data.
+- Reports API routes: POST /api/v1/reports/summary (compute), GET /api/v1/reports/summaries (list), POST/GET /api/v1/reports/scheduled, POST/GET /api/v1/reports/jobs.
+- Verified: fee summary for 2026-11-14 shows collectedPaise=500000 (₹5,000), outstandingPaise=0 — matches invoice INV-000001 paid in full.
+- Added /reports admin UI page to the dashboard sidebar.
 - Updated BUILD_LOG and documentation as needed.
 
 ### Next

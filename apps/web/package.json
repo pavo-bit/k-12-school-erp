@@ -21,6 +21,7 @@
     "@school-erp/fees": "workspace:*",
     "@school-erp/hr": "workspace:*",
     "@school-erp/platform": "workspace:*",
+    "@school-erp/reports": "workspace:*",
     "@school-erp/sis": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "argon2": "^0.45.2",

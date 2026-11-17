@@ -12,3 +12,4 @@ export * from "./hr";
 export * from "./communication";
 export * from "./exams";
 export * from "./admissions";
+export * from "./reports";

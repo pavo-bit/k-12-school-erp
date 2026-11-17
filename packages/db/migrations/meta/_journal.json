@@ -43,6 +43,13 @@
       "when": 1794722301429,
       "tag": "0005_rls_admissions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794930182545,
+      "tag": "0006_burly_redwing",
+      "breakpoints": true
     }
   ]
 }

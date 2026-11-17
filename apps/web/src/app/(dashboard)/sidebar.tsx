@@ -7,6 +7,7 @@ import {
   Users,
   CalendarCheck,
   IndianRupee,
+  FileBarChart,
   LogOut,
   GraduationCap,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const nav = [
   { href: "/students", label: "Students", icon: Users },
   { href: "/attendance", label: "Attendance", icon: CalendarCheck },
   { href: "/fees", label: "Fees", icon: IndianRupee },
+  { href: "/reports", label: "Reports", icon: FileBarChart },
 ];
 
 export default function Sidebar() {

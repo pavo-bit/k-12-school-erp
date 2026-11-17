@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -80,6 +81,14 @@ export default function LoginPage() {
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
+          <div className="mt-4 text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-[var(--brand)] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         <p className="mt-6 text-center text-xs text-slate-400">

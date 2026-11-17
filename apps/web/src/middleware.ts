@@ -25,9 +25,12 @@ export function middleware(request: NextRequest) {
   const requestId = crypto.randomUUID();
   const schoolSlug = resolveSchoolSlug(request);
 
-  // Apply rate limiting to API routes
+  // Apply rate limiting to API routes — auth endpoints get a tight bucket
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    const rateLimitResponse = rateLimitMiddleware(request);
+    const isAuth = request.nextUrl.pathname.startsWith("/api/v1/auth/");
+    const rateLimitResponse = isAuth
+      ? rateLimitMiddleware(request, 10, 60_000) // 10 req/min per IP on login/reset
+      : rateLimitMiddleware(request);
     if (rateLimitResponse) {
       return rateLimitResponse;
     }

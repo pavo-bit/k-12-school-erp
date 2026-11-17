@@ -1,5 +1,15 @@
 # Build Log
 
+## 2026-11-18 — Password reset flow + auth rate limiting
+
+- New routes POST /api/v1/auth/forgot-password and POST /api/v1/auth/reset-password.
+- Forgot-password always returns the same 200 body regardless of whether the email exists (anti-enumeration). Reset tokens are 32 random bytes hex, stored SHA-256-hashed in verifications with a 30-minute TTL, single-use (deleted on success), and on success ALL sessions for the user are revoked (forces re-login everywhere).
+- New pages /forgot-password and /reset-password (reset page reads ?token= from the URL). Login page links to "Forgot password?".
+- /api/v1/auth/* now rate-limited to 10 req/min per IP (429 with Retry-After). Verified: 11 rapid calls -> 200s then 429; cooldown restores 200.
+- Verified end-to-end live: forgot -> console email with token -> reset -> old password 401 / new password 200 -> token replay 400 INVALID_TOKEN -> password restored to documented dev credentials.
+- NOTE: reset emails currently go through the console driver (stdout). Wire Resend/MSG91 before production.
+
+
 ## 2026-11-18 — Worker does real work: outbox → receipt notifications delivered
 
 The `outbox_events` table shipped since Milestone 1 but nothing produced or consumed it — pure theater. Wired both halves:

@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   IndianRupee,
   FileBarChart,
+  ClipboardCheck,
   LogOut,
   GraduationCap,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const nav = [
   { href: "/students", label: "Students", icon: Users },
   { href: "/attendance", label: "Attendance", icon: CalendarCheck },
   { href: "/fees", label: "Fees", icon: IndianRupee },
+  { href: "/exams", label: "Exams", icon: ClipboardCheck },
   { href: "/reports", label: "Reports", icon: FileBarChart },
 ];
 

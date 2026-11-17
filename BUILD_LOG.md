@@ -1,5 +1,10 @@
 # Build Log
 
+## 2026-11-18 — Exams admin page: report cards are one click in the dashboard
+
+- New `/exams` page under `(dashboard)`: term selector → exams for the term (radio list) → student picker → "Generate & download PDF" (client-side blob download), plus a table of every generated card for the selected exam with direct Download links (`/api/v1/exams/report-cards/[id]`). Sidebar gains "Exams" with the ClipboardCheck icon.
+- Consumes only verified endpoints (terms/exams/students/report-cards, all 200); page is `200` in production mode with the Exams nav highlighted. The exams list itself is seeded (Term 2, Class 10 Unit Test 2, marks for Aarav) so the flow works out of the box against dev data.
+
 ## 2026-11-17 — Fees ledger made real: gapless sequences, payment application, refunds guard
 
 Critical audit finding: **no code path anywhere updated `invoice.paid_paise`** — the payments leg was hollow; INV-000001's paid state was hand-seeded. Invoice/receipt numbers were caller-supplied and `nextDocumentNumber` was a `not_implemented` stub. All closed:

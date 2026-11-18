@@ -1,0 +1,591 @@
+openapi: 3.1.0
+info:
+  title: School ERP API
+  description: Multi-tenant K-12 school ERP SaaS API
+  version: 1.0.0
+  contact:
+    name: School ERP Team
+    url: https://github.com/pavo-bit/k-12-school-erp
+
+servers:
+  - url: https://api.school-erp.com/api/v1
+    description: Production
+  - url: https://staging.school-erp.com/api/v1
+    description: Staging
+  - url: http://localhost:3000/api/v1
+    description: Development
+
+security:
+  - sessionCookie: []
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session_token
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+
+    Student:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        admissionNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, graduated, transferred, withdrawn]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        invoiceNumber:
+          type: string
+        totalPaise:
+          type: integer
+        paidPaise:
+          type: integer
+        status:
+          type: string
+          enum: [draft, issued, partial, paid, overdue, cancelled]
+        issueDate:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+
+    AttendanceSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        sectionId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        sessionType:
+          type: string
+        status:
+          type: string
+          enum: [open, closed, submitted]
+
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  service:
+                    type: string
+
+  /readyz:
+    get:
+      summary: Readiness check
+      responses:
+        "200":
+          description: Service is ready
+        "503":
+          description: Service is not ready
+
+  /metrics:
+    get:
+      summary: Metrics endpoint
+      responses:
+        "200":
+          description: Service metrics
+
+  /students:
+    get:
+      summary: List students
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Student"
+    post:
+      summary: Create student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [admissionNumber, firstName, dateOfBirth, gender]
+              properties:
+                admissionNumber:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+                gender:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+      responses:
+        "201":
+          description: Student created
+        "400":
+          description: Validation error
+
+  /fees/invoices:
+    get:
+      summary: List invoices
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of invoices
+    post:
+      summary: Create invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, academicYearId, financialYear, invoiceNumber, issueDate, dueDate, invoiceLines]
+              properties:
+                studentId:
+                  type: string
+                  format: uuid
+                academicYearId:
+                  type: string
+                  format: uuid
+                financialYear:
+                  type: string
+                invoiceNumber:
+                  type: string
+                issueDate:
+                  type: string
+                  format: date-time
+                dueDate:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+                invoiceLines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      feeHeadId:
+                        type: string
+                        format: uuid
+                      amountPaise:
+                        type: integer
+                      concessionPaise:
+                        type: integer
+                      netPaise:
+                        type: integer
+      responses:
+        "201":
+          description: Invoice created
+
+  /attendance/sessions:
+    get:
+      summary: List attendance sessions
+      parameters:
+        - name: sectionId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of sessions
+    post:
+      summary: Create attendance session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sectionId, date, sessionType]
+              properties:
+                sectionId:
+                  type: string
+                  format: uuid
+                date:
+                  type: string
+                  format: date-time
+                sessionType:
+                  type: string
+                status:
+                  type: string
+      responses:
+        "201":
+          description: Session created
+
+  /attendance/records:
+    get:
+      summary: List attendance records
+      parameters:
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of records
+    post:
+      summary: Mark attendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId, studentId, status]
+              properties:
+                sessionId:
+                  type: string
+                  format: uuid
+                studentId:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  enum: [present, absent, late, half_day]
+      responses:
+        "201":
+          description: Attendance marked
+
+  /hr/staff:
+    get:
+      summary: List staff
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: employeeCode
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of staff
+    post:
+      summary: Create staff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employeeCode, joiningDate]
+              properties:
+                employeeCode:
+                  type: string
+                userId:
+                  type: string
+                  format: uuid
+                designationId:
+                  type: string
+                  format: uuid
+                departmentId:
+                  type: string
+                  format: uuid
+                joiningDate:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+      responses:
+        "201":
+          description: Staff created
+
+  /exams/terms:
+    get:
+      summary: List exam terms
+      parameters:
+        - name: academicYearId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of exam terms
+    post:
+      summary: Create exam term
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [academicYearId, name, startDate, endDate]
+              properties:
+                academicYearId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+      responses:
+        "201":
+          description: Exam term created
+
+  /admissions/enquiries:
+    get:
+      summary: List enquiries
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: classSought
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of enquiries
+    post:
+      summary: Create enquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentName, guardianPhone, classSought]
+              properties:
+                studentName:
+                  type: string
+                guardianPhone:
+                  type: string
+                classSought:
+                  type: string
+                source:
+                  type: string
+                  enum: [website, walk_in, referral, advertisement, other]
+                status:
+                  type: string
+      responses:
+        "201":
+          description: Enquiry created
+
+  /reports:
+    get:
+      summary: List reports
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reports
+    post:
+      summary: Create report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, name]
+              properties:
+                type:
+                  type: string
+                  enum: [attendance, fee_collection, enrollment, exam_results, student_list, custom]
+                name:
+                  type: string
+                description:
+                  type: string
+                filters:
+                  type: object
+                schedule:
+                  type: string
+                  enum: [none, daily, weekly, monthly]
+      responses:
+        "201":
+          description: Report created
+
+  /audit-logs:
+    get:
+      summary: List audit logs
+      parameters:
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: entityId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: actorId
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of audit logs
+
+  /webhooks/payments:
+    post:
+      summary: Payment webhook handler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event, payload]
+              properties:
+                event:
+                  type: string
+                payload:
+                  type: object
+      responses:
+        "200":
+          description: Webhook processed

@@ -36,6 +36,7 @@ Parent child endpoints verify the authenticated guardian-to-student relationship
 | GET | `/api/v1/mobile/teacher/profile` | Authenticated teacher's staff profile |
 | GET | `/api/v1/mobile/teacher/sections` | Assigned sections and subjects |
 | GET | `/api/v1/mobile/teacher/sections/:sectionId/roster` | Active student roster for an assigned section |
+| GET | `/api/v1/mobile/teacher/timetable?dayOfWeek=0..6` | Assigned timetable slots; optional day filter (Sunday=0) |
 | GET | `/api/v1/mobile/teacher/attendance/sessions?sectionId=&date=` | Attendance sessions for an assigned section |
 | POST | `/api/v1/mobile/teacher/attendance/sessions` | Create an attendance session in an assigned section |
 | GET | `/api/v1/mobile/teacher/attendance/records?sessionId=` | Read attendance records for an assigned session |

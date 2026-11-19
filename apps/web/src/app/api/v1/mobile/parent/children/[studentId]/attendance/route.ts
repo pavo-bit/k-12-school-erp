@@ -16,6 +16,7 @@ export async function GET(
       eq(attendanceRecords.schoolId, ctx.schoolId),
       eq(attendanceRecords.studentId, studentId),
       eq(attendanceSessions.schoolId, ctx.schoolId),
+      eq(attendanceSessions.status, "submitted"),
     ];
     if (from) conditions.push(gte(attendanceSessions.date, from));
     if (to) conditions.push(lte(attendanceSessions.date, to));

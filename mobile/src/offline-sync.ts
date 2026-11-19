@@ -66,7 +66,8 @@ export async function syncOfflineRecords(): Promise<{ synced: number; failed: nu
         const allRecords = await getOfflineRecords();
         for (const record of records) {
           const idx = allRecords.findIndex((r) => r.id === record.id);
-          if (idx !== -1) allRecords[idx].synced = true;
+          const storedRecord = allRecords[idx];
+          if (storedRecord) storedRecord.synced = true;
         }
         await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(allRecords));
         synced += records.length;

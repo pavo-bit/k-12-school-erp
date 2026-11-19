@@ -2,7 +2,7 @@
 
 This folder is the dedicated home for the SSVM teacher Android application.
 
-The API namespace is `/api/v1/mobile/teacher`. The first implementation exposes the teacher's assigned sections, class rosters, today's timetable, attendance sessions and records, offline attendance batch sync and school announcements.
+The API namespace is `/api/v1/mobile/teacher`. The first implementation exposes the teacher's assigned sections, class rosters, timetable, attendance sessions and records, offline attendance batch sync and school announcements.
 
 ## API authentication
 
@@ -15,7 +15,7 @@ Phone OTP login, rotating mobile refresh tokens and device registration are sepa
 - `GET /api/v1/mobile/teacher/profile`
 - `GET /api/v1/mobile/teacher/sections`
 - `GET /api/v1/mobile/teacher/sections/:sectionId/roster`
-- `GET /api/v1/mobile/teacher/timetable/today`
+- `GET /api/v1/mobile/teacher/timetable?dayOfWeek=0..6`
 - `GET|POST /api/v1/mobile/teacher/attendance/sessions`
 - `GET|POST /api/v1/mobile/teacher/attendance/records`
 - `POST /api/v1/mobile/teacher/attendance/sync`

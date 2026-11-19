@@ -871,3 +871,19 @@ paths:
       responses:
         "200":
           description: Published teacher and school announcements
+  /mobile/teacher/timetable:
+    get:
+      summary: List timetable slots assigned to the authenticated teacher
+      parameters:
+        - name: dayOfWeek
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+            description: Sunday is 0 and Saturday is 6. Omit to return all assigned days.
+      responses:
+        "200":
+          description: Assigned weekly timetable slots
+        "403":
+          description: Active staff profile required

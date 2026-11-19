@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const CreateSessionSchema = z.object({
   sectionId: z.string().uuid(),
-  date: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   sessionType: z.enum(["daily", "full_day", "morning", "afternoon"]).default("daily"),
 });
 

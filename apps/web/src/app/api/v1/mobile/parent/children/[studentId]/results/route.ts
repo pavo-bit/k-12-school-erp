@@ -46,7 +46,7 @@ export async function GET(
     return NextResponse.json({
       data: rows.map((row) => ({
         ...row,
-        reportCardDownloadUrl: `/api/v1/exams/report-cards/${row.reportCardId}`,
+        reportCardDownloadUrl: `/api/v1/mobile/parent/children/${studentId}/results/${row.reportCardId}`,
       })),
       meta: { request_id: crypto.randomUUID() },
     });
